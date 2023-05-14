@@ -37,7 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   dio: ^5.1.1
   flutter_secure_storage: ^8.0.0
-  json_annotation: ^4.8.0
+  json_annotation: ^4.8.1
   retrofit: '>=4.0.0 <5.0.0'
   logger: any  #for logging purpose
   flutter_riverpod: ^2.3.5
@@ -59,6 +59,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   build_runner: ^2.3.3
+  # json으로 통신하는 상황에서 실수를 줄이기 위해서 사용 
+  # fromJson이나 toJson을 자동으로 생성해줌
   json_serializable: ^6.6.0
   retrofit_generator: '>=5.0.0 <6.0.0'
 

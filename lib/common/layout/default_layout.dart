@@ -6,6 +6,7 @@ class DefaultLayout extends StatelessWidget {
   final String? title;
   final Widget? bottomNavigationBar;
   final Widget? floatingActionButton;
+  final List<Widget>? AppBarActions;
   final bool isFullScreen;
   const DefaultLayout({
     super.key,
@@ -13,6 +14,7 @@ class DefaultLayout extends StatelessWidget {
     this.bottomNavigationBar,
     this.backgroundColor,
     this.title,
+    this.AppBarActions,
     this.floatingActionButton,
     this.isFullScreen = false,
   });
@@ -36,6 +38,7 @@ class DefaultLayout extends StatelessWidget {
       return null;
     } else {
       return AppBar(
+        actions: AppBarActions,
         backgroundColor: Colors.white,
         // 앞으로 튀어나온 효과
         elevation: 0,

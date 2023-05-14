@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:manager/common/const/colors.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextFormField extends StatelessWidget {
   final String label;
   final String initialValue;
   final FormFieldSetter<String> onSaved;
 
-  const CustomTextField({
+  const CustomTextFormField({
     super.key,
     required this.label,
     required this.initialValue,
