@@ -12,3 +12,9 @@ const simulatorIp = '127.0.0.1:3001';
 final ip = Platform.isIOS ? simulatorIp : emulatorIp;
 
 const accessToken = 'ProjectEomManagerAccessToken';
+
+const NEW_ID = "NEW";
+
+const CONTENT_TYPE_TXT = 'txt';
+const CONTENT_TYPE_IMG = 'img';
+const CONTENT_TYPE_VID = 'vid';

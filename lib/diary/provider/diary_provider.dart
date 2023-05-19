@@ -4,19 +4,15 @@ import 'package:manager/diary/model/diary_model.dart';
 import 'package:collection/collection.dart';
 import 'package:manager/diary/repository/diary_repository.dart';
 
-final diaryDetailProvider = Provider.family<DiaryModel, String>((ref, id) {
+final diaryDetailProvider = Provider.family<DiaryModel?, String>((ref, id) {
   final state = ref.watch(diaryProvider);
 
   //레스토랑 프로젝트에서 해당 줄을 추가하였는데 이유가 뭔지 궁금하네.....
   // if(state is! CursorPagination){
   //   return null;
   // }
-  final DiaryModel? result =
-      state.firstWhereOrNull((element) => element.id == id);
-  if (result == null) {
-    return DiaryModel.empty();
-  }
-  return result;
+
+  return state.firstWhereOrNull((element) => element.id == id);
 });
 
 final diaryProvider =

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/const/colors.dart';
+import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/diary/view/diary_add_screen.dart';
+import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/home/view/home_screen.dart';
 import 'package:manager/music/view/play_list_screen.dart';
@@ -51,7 +52,10 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         floatingActionButton = FloatingActionButton(
           onPressed: () {
             if (controller.index == 1) {
-              context.pushNamed(DiaryAddScreen.routeName);
+              context.pushNamed(
+                DiaryDetailScreen.routeName,
+                pathParameters: {'rid': NEW_ID},
+              );
             } else {
               // context.pushNamed(DiaryAddScreen.routeName);
             }

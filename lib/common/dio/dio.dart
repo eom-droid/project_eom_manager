@@ -9,9 +9,9 @@ final dioProvider = Provider<Dio>((ref) {
   final dio = Dio();
   // final storage = ref.read(secureStorageProvider);
 
-  // dio.interceptors.add(
-  //   CustomInterceptor(ref: ref, storage: storage),
-  // );
+  dio.interceptors.add(
+    CustomInterceptor(),
+  );
   return dio;
 });
 
@@ -25,8 +25,7 @@ class CustomInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     print('[REQ] [${options.method}] ${options.uri}');
-
-    if (options.headers['accessToken' == 'true']) {
+    if (options.headers['accessToken'] == 'true') {
       // 헤더 삭제
       options.headers.remove('accessToken');
       const token = accessToken;
@@ -46,7 +45,9 @@ class CustomInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     print('[ERR] [${err.response?.statusCode}] ${err.requestOptions.uri}');
-    super.onError(err, handler);
+    return handler.reject(err);
+
+    // super.onError(err, handler);
   }
 }
 

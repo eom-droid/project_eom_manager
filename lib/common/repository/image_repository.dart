@@ -1,0 +1,27 @@
+import 'package:dio/dio.dart' hide Headers;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:manager/common/const/data.dart';
+import 'package:manager/common/dio/dio.dart';
+import 'package:retrofit/retrofit.dart';
+
+part 'image_repository.g.dart';
+
+final uploadRepositoryProvider = Provider<UploadRepository>((ref) {
+  final dio = ref.read(dioProvider);
+  return UploadRepository(dio, baseUrl: 'http://$ip/upload');
+});
+
+@RestApi()
+abstract class UploadRepository {
+  factory UploadRepository(Dio dio, {String baseUrl}) = _UploadRepository;
+
+  @POST('/')
+  @Headers({
+    'accessToken': 'true',
+  })
+  @MultiPart()
+  Future<dynamic> uploadImage({
+    @Part(name: "folderName") required String folderName,
+    @Part(name: "files") required List<MultipartFile> files,
+  });
+}

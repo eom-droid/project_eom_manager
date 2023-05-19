@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/view/root_tab.dart';
 import 'package:manager/common/view/splash_screen.dart';
-import 'package:manager/diary/view/diary_add_screen.dart';
+import 'package:manager/diary/view/diary_detail_screen.dart';
 
 final routerProvider = ChangeNotifierProvider<RouterProvider>((ref) {
   return RouterProvider(ref: ref);
@@ -25,26 +25,26 @@ class RouterProvider extends ChangeNotifier {
           path: '/',
           name: RootTab.routeName,
           builder: (_, __) => const RootTab(),
-          // routes: [
-          //   GoRoute(
-          //     path: 'restaurant/:rid',
-          //     name: RestaurantDetailScreen.routeName,
-          //     builder: (_, state) => RestaurantDetailScreen(
-          //       id: state.pathParameters['rid']!,
-          //     ),
-          //   )
-          // ],
+          routes: [
+            GoRoute(
+              path: 'diary/:rid',
+              name: DiaryDetailScreen.routeName,
+              builder: (_, state) => DiaryDetailScreen(
+                id: state.pathParameters['rid']!,
+              ),
+            )
+          ],
         ),
         GoRoute(
           path: '/splash',
           name: SplashScreen.routeName,
           builder: (_, __) => const SplashScreen(),
         ),
-        GoRoute(
-          path: '/diaryAdd',
-          name: DiaryAddScreen.routeName,
-          builder: (_, __) => const DiaryAddScreen(),
-        ),
+        // GoRoute(
+        //   path: '/diaryAdd',
+        //   name: DiaryAddScreen.routeName,
+        //   builder: (_, __) => const DiaryAddScreen(),
+        // ),
         // GoRoute(
         //   path: '/login',
         //   name: LoginScreen.routeName,
