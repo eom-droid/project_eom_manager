@@ -18,3 +18,7 @@ const NEW_ID = "NEW";
 const CONTENT_TYPE_TXT = 'txt';
 const CONTENT_TYPE_IMG = 'img';
 const CONTENT_TYPE_VID = 'vid';
+
+const CATEGORY_DAILY = 'daily';
+const CATEGORY_TRAVEL = 'travel';
+const CATEGORY_STUDY = 'study';

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
 import 'package:collection/collection.dart';
 import 'package:manager/diary/repository/diary_repository.dart';
@@ -25,12 +24,4 @@ class DiaryNotifier extends StateNotifier<List<DiaryModel>> {
   final DiaryRepository repository;
 
   DiaryNotifier({required this.repository}) : super([]);
-
-  // void setDiary(DiaryDetailModel diary) {
-  //   state = diary;
-  // }
-
-  Future<void> addDiary(DiaryDetailModel diary) async {
-    print(await repository.addDiary(diary: diary));
-  }
 }

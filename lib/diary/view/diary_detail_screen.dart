@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:manager/common/components/custom_text_form_field.dart';
+import 'package:manager/common/layout/loading_layout.dart';
+import 'package:manager/common/style/button/custom_outlined_button_style.dart';
+import 'package:manager/diary/components/diary_edit_detail_card.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
+import 'package:manager/diary/components/diary_img_input.dart';
+import 'package:manager/diary/components/diary_txt_input.dart';
+import 'package:manager/diary/components/diary_vid_input.dart';
 
-class DiaryDetailScreen extends ConsumerStatefulWidget {
+class DiaryDetailScreen extends StatefulWidget {
   static String get routeName => 'diaryDetail';
   final String id;
 
@@ -16,61 +22,88 @@ class DiaryDetailScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
+  State<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
 }
 
-class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
+class _ContentInput {
+  String? contentType;
+  TextEditingController controller;
+  _ContentInput({
+    required this.contentType,
+    required this.controller,
+  });
+}
+
+class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   final ScrollController scrollController = ScrollController();
 
-  String? title;
+  bool isLoading = false;
+
+  String title = '';
   DateTime postDate = DateTime.now();
   TextEditingController postDateController = TextEditingController(
       text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
-  String? weather;
-  List<String> hashTags = [];
-  List<String?> contentOrder = [];
-  List<String> txts = [];
-
-  // final picker = ImagePicker();
+  String weather = '';
+  List<String> hashtags = [];
+  List<_ContentInput> contents = [];
+  String category = CATEGORY_DAILY;
 
   @override
   Widget build(BuildContext context) {
-    return DefaultLayout(
-      title: 'Diary Add',
-      isFullScreen: true,
-      AppBarActions: [
-        IconButton(
-          onPressed: () {
-            onSavePressed();
-          },
-          icon: const Icon(Icons.save_as_outlined),
-        ),
-      ],
-      child: SafeArea(
-        top: false,
-        child: CustomScrollView(
-          controller: scrollController,
-          slivers: [
-            renderTop(),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16.0),
-            ),
-            renderDetailContents(contentOrder: contentOrder),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16.0),
-            ),
-            renderAddContentButton(),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16.0),
-            ),
-          ],
+    return LoadingLayout(
+      isLoading: isLoading,
+      childWidget: DefaultLayout(
+        title: 'Diary Add',
+        isFullScreen: true,
+        AppBarActions: [
+          IconButton(
+            onPressed: () {
+              onSavePressed();
+            },
+            icon: const Icon(Icons.save_as_outlined),
+          ),
+        ],
+        child: SafeArea(
+          top: false,
+          child: CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            controller: scrollController,
+            slivers: [
+              _renderTop(),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 16.0),
+              ),
+              renderDetailContents(contents: contents),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 16.0),
+              ),
+              renderAddContentButton(onPressed: () {
+                setState(() {
+                  contents.add(_ContentInput(
+                      contentType: null, controller: TextEditingController()));
+                });
+
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  scrollController.animateTo(
+                      scrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.fastOutSlowIn);
+                });
+              }),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 16.0),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  SliverToBoxAdapter renderAddContentButton() {
+  SliverToBoxAdapter renderAddContentButton({
+    required VoidCallback onPressed,
+  }) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -78,16 +111,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(PRIMARY_COLOR),
           ),
-          onPressed: () {
-            setState(() {
-              contentOrder.add(null);
-              scrollController.animateTo(
-                scrollController.position.maxScrollExtent + 150.0,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeOut,
-              );
-            });
-          },
+          onPressed: onPressed,
           child: const Padding(
             padding: EdgeInsets.symmetric(vertical: 16.0),
             child: Text('컨텐츠 세부항목 추가하기'),
@@ -98,123 +122,115 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   }
 
   SliverPadding renderDetailContents({
-    required List<String?> contentOrder,
+    required List<_ContentInput> contents,
   }) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            // 여기서 selectbox를 두고 txt vid img 중 택1을 진행
-
-            if (contentOrder[index] == null) {
-              return Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(
-                    color: INPUT_BORDER_COLOR,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
-                            child: Text('#${index + 1}'),
-                          ),
-                          const Padding(
-                              padding: EdgeInsets.only(left: 16.0),
-                              child: Text('컨텐츠 형태 선택')),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                contentOrder.removeAt(index);
-                              });
-                            },
-                            icon: const Icon(Icons.cancel_outlined),
-                          )
-                        ],
-                      ),
-                      const SizedBox(height: 16.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: PRIMARY_COLOR,
-                              side: const BorderSide(
-                                color: PRIMARY_COLOR,
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                contentOrder[index] = CONTENT_TYPE_TXT;
-                              });
-                            },
-                            child: const Text('텍스트'),
-                          ),
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: PRIMARY_COLOR,
-                              side: const BorderSide(
-                                color: PRIMARY_COLOR,
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                contentOrder[index] = CONTENT_TYPE_IMG;
-                              });
-                            },
-                            child: const Text('이미지'),
-                          ),
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: PRIMARY_COLOR,
-                              side: const BorderSide(
-                                color: PRIMARY_COLOR,
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                contentOrder[index] = CONTENT_TYPE_VID;
-                              });
-                            },
-                            child: const Text('동영상'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16.0),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return Container(
-              height: 300.0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(
-                  color: Colors.black,
-                ),
+      sliver: SliverList.separated(
+        separatorBuilder: (context, index) {
+          return const SizedBox(height: 16.0);
+        },
+        itemCount: contents.length,
+        itemBuilder: (context, index) {
+          final key = DateTime.now().toString();
+          return Dismissible(
+            direction: DismissDirection.endToStart,
+            key: Key(key),
+            onDismissed: (direction) {
+              setState(() {
+                contents.removeAt(index);
+              });
+            },
+            child: DiaryEditDetailCard(
+              index: index,
+              childWidget: renderContent(
+                contentInput: contents[index],
+                callback: (String contentType) {
+                  setState(() {
+                    contents[index].contentType = contentType;
+                  });
+                },
               ),
-              child: Center(
-                child: Text(contentOrder[index]!),
-              ),
-            );
-          },
-          childCount: contentOrder.length,
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  SliverToBoxAdapter renderTop() {
+  Widget renderContent({
+    required _ContentInput contentInput,
+    required void Function(String) callback,
+  }) {
+    switch (contentInput.contentType) {
+      case CONTENT_TYPE_TXT:
+        return DiaryTxtInput(
+          controller: contentInput.controller,
+        );
+      case CONTENT_TYPE_IMG:
+        return DiaryImgInput(
+          controller: contentInput.controller,
+        );
+      case CONTENT_TYPE_VID:
+        return const DiaryVidInput();
+      default:
+        return renderDefault(callback: callback);
+    }
+  }
+
+  Widget renderDefault({
+    required void Function(String) callback,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Column(
+        children: [
+          const Text('컨텐츠 형태를 정해주세요'),
+          const SizedBox(height: 16.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              OutlinedButton(
+                style: customOutlinedButtonStyle,
+                onPressed: () => callback(CONTENT_TYPE_TXT),
+                child: const Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Text('텍스트'),
+                ),
+              ),
+              OutlinedButton(
+                style: customOutlinedButtonStyle,
+                onPressed: () => callback(CONTENT_TYPE_IMG),
+                child: const Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Text('이미지'),
+                ),
+              ),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: BODY_TEXT_COLOR,
+                  side: const BorderSide(
+                    color: BODY_TEXT_COLOR,
+                  ),
+                ),
+                // onPressed: () => callback(CONTENT_TYPE_VID),
+                onPressed: () => {},
+                child: const Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Text('동영상'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _renderTop() {
     return SliverToBoxAdapter(
       child: Column(
         children: [
@@ -225,20 +241,6 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
               child: Text('썸네일 들어갈 자리'),
             ),
           ),
-          // showImage(),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     getImage(ImageSource.gallery);
-          //   },
-          //   child: const Text('이미지 가져오기'),
-          // ),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     upload(_image!);
-          //   },
-          //   child: const Text('이미지 업로드하기'),
-          // ),
-
           const SizedBox(height: 16.0),
           Form(
             key: formKey,
@@ -246,13 +248,18 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 children: [
+                  _Category(
+                    category: category,
+                  ),
+                  const SizedBox(height: 16.0),
                   _Title(
-                    initialValue: title ?? '',
+                    initialValue: title,
                     onSaved: onTitleSaved,
                   ),
                   const SizedBox(height: 16.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: _PostDate(
@@ -264,18 +271,18 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                       const SizedBox(width: 16.0),
                       Expanded(
                         child: _Weather(
-                          initialValue: weather ?? '',
+                          initialValue: weather,
                           onSaved: onWeatherSaved,
                         ),
                       )
                     ],
                   ),
                   const SizedBox(height: 16.0),
-                  _HashTags(
+                  _Hashtags(
                     onSaved: onHashTagsSaved,
-                    initialValue: hashTags.join(' '),
+                    initialValue: hashtags.join(' '),
                     onChanged: onHashTagsChanged,
-                    hashTags: hashTags,
+                    hashtags: hashtags,
                     hintText: '# 제외, 공백으로 나눠져요.(최대 20자)',
                     maxLength: 20,
                   ),
@@ -309,24 +316,9 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
     if (val == null) return;
     final splitedList = val.split(' ');
     setState(() {
-      hashTags = splitedList;
+      hashtags = splitedList;
     });
   }
-
-  // Widget showImage() {
-  //   return Container(
-  //       color: const Color(0xffd0cece),
-  //       width: MediaQuery.of(context).size.width,
-  //       height: MediaQuery.of(context).size.width + 500,
-  //       child: Center(
-  //           child: _image == null
-  //               ? const Text('No image selected.')
-  //               : Image.file(
-  //                   File(_image!.path),
-  //                   fit: BoxFit.fitWidth,
-  //                   width: MediaQuery.of(context).size.width,
-  //                 )));
-  // }
 
   // upload(File imageFile) async {
   //   // dio.options.headers['Content-Type'] = 'multipart/form-data';
@@ -347,48 +339,6 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   //   // );
   // }
 
-  // Future<File> getImage() async {
-  //   final ImagePicker picker = ImagePicker();
-  //   // Pick an image
-  //   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-  //   //TO convert Xfile into file
-  //   File file = File(image!.path);
-  //   //print(‘Image picked’);
-  //   return file;
-  // }
-
-  // 비동기 처리를 통해 갤러리에서 이미지를 가져온다.
-  // Future getImage(ImageSource imageSource) async {
-  //   try {
-  //     final image = await picker.pickImage(
-  //       source: imageSource,
-  //       // imageQuality는 직접 찍은 사진에 대해서 보정값이 들어가며
-  //       // 캡쳐한 이미지는 보정값이 적용이 안됨
-  //       imageQuality: 85,
-  //       // 현재로서 제일 적당한 사이즈로서 보임
-  //       // 5mb를 넘지 않으며, 깨짐 정도도 적당함
-  //       maxHeight: 1080,
-  //       maxWidth: 1080,
-  //     );
-
-  //     setState(() {
-  //       if (image == null) return;
-  //       if (_image != null) {
-  //         _image2 = File(image.path);
-  //       } else {
-  //         _image = File(image.path); // 가져온 이미지를 _image에 저장
-  //       }
-  //     });
-  //   } catch (e) {
-  //     // 1. not supported image file(ex : heic)
-  //     if (e is PlatformException) {
-  //       // print(e);
-  //     } else {
-  //       print(e);
-  //     }
-  //   }
-  // }
-
   onTitleSaved(String? val) {
     title = val ?? '';
   }
@@ -402,72 +352,167 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
 
   onHashTagsSaved(String? val) {}
 
-  // Widget _renderBasicInfo({required String? title}) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       CustomTextFormField(
-  //         initialValue: title,
-  //         label: '제목',
-  //         onSaved: (String? val) {
-  //           title = val ?? '';
-  //         },
-  //       ),
-  //       const SizedBox(height: 16.0),
-  //       const Row(
-  //         children: [
-  //           Expanded(
-  //             child: Text('???'),
-  //             // child: CustomTextField(
-  //             //   initialValue:state.postDate,
-  //             //   label: '날씨',
-  //             //   onSaved: (String? val) {
-  //             //     print(val);
-  //             //   },
-  //             // ),
-  //           ),
-  //           SizedBox(width: 16.0),
-  //           Expanded(
-  //             child: Text('???'),
-
-  //             // child: CustomTextField(
-  //             //   initialValue: '',
-  //             //   label: '게시일자',
-  //             //   onSaved: (String? val) {
-  //             //     print(val);
-  //             //   },
-  //             // ),
-  //           ),
-  //         ],
-  //       ),
-  //       const SizedBox(height: 16.0),
-  //       // CustomTextField(
-  //       //   initialValue: '',
-  //       //   label: '해시태그',
-  //       //   onSaved: (String? val) {
-  //       //     print(val);
-  //       //   },
-  //       // ),
-  //     ],
-  //   );
-  // }
-
   void onSavePressed() async {
-    if (formKey.currentContext == null) return;
+    FocusScope.of(context).requestFocus(FocusNode());
+    setState(() {
+      isLoading = true;
+    });
 
-    // final DiaryDetailModel state = ref.read(selectedDiaryProvider);
+    if (validate()) {
+      //   final List<String> txts = [];
+      //   final List<String> imgs = [];
+      //   final List<String> vids = [];
+      //   final List<String> contentOrder = [];
+
+      // DiaryService.addDiary(
+      //   DiaryDetailModel(
+      //   id: NEW_ID,
+      //   title: title,
+      //   writer: '엄태호',
+      //   weather: weather,
+      //   hashtags: hashtags,
+      //   postDate: postDate,
+      //   thumnail:'',
+      //   category: category,
+      //   isShown: true,
+      //   regDTime: DateTime.now(),
+      //   modDTime: DateTime.now(),
+      //   diaryId: NEW_ID,
+      //   txts: txts,
+      //   imgs: imgs,
+      //   vids: vids,
+      //   contentOrder: contentOrder,
+      // )
+      // );
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+    // if (formKey.currentContext == null) return;
+
+    // // final DiaryDetailModel state = ref.read(selectedDiaryProvider);
+
+    // // form 내 모든 필드의 validate를 실행
+    // if (formKey.currentState!.validate()) {
+    //   // form 내 모든 필드의 save를 실행
+    //   formKey.currentState!.save();
+    //   // final DiaryDetailModel savingDiaryDetailModel = DiaryDetailModel.empty();
+    //   // savingDiaryDetailModel.copyWith(
+    //   //   title: title,
+    //   // );
+
+    //   // ref.read(diaryProvider.notifier).addDiary(savingDiaryDetailModel);
+    // }
+  }
+
+  bool validate() {
+    if (formKey.currentContext == null) {
+      _showSnackBar(content: 'formKey가 없습니다');
+      return false;
+    }
 
     // form 내 모든 필드의 validate를 실행
-    if (formKey.currentState!.validate()) {
-      // form 내 모든 필드의 save를 실행
-      formKey.currentState!.save();
-      // final DiaryDetailModel savingDiaryDetailModel = DiaryDetailModel.empty();
-      // savingDiaryDetailModel.copyWith(
-      //   title: title,
-      // );
+    if (!formKey.currentState!.validate()) {
+      _showSnackBar(content: '기본 정보를 입력해주세요');
 
-      // ref.read(diaryProvider.notifier).addDiary(savingDiaryDetailModel);
+      return false;
     }
+
+    if (contents.isEmpty) {
+      _showSnackBar(content: '컨텐츠를 한개이상 넣어주세요');
+      return false;
+    }
+    for (int i = 0; i < contents.length; i++) {
+      if (contents[i].contentType == null) {
+        _showSnackBar(content: '${i + 1}번쨰 컨텐츠 형태를 선택해주세요');
+        return false;
+      }
+      if (contents[i].controller.text == '') {
+        _showSnackBar(content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void _showSnackBar({
+    required String content,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(content),
+      ),
+    );
+  }
+}
+
+class _Category extends StatelessWidget {
+  final String category;
+  const _Category({
+    required this.category,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          '카테고리',
+          style: TextStyle(
+            color: PRIMARY_COLOR,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 2.0),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(
+              color: PRIMARY_COLOR,
+            ),
+          ),
+          child: ButtonTheme(
+            alignedDropdown: true,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton(
+                value: category,
+                isExpanded: true,
+                items: [
+                  CATEGORY_DAILY,
+                  CATEGORY_TRAVEL,
+                  CATEGORY_STUDY,
+                ]
+                    .map<DropdownMenuItem<String>>(
+                      (e) => DropdownMenuItem<String>(
+                        value: e,
+                        onTap: () => print(e),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Center(
+                            child: Text(
+                                {
+                                  CATEGORY_DAILY: '일상',
+                                  CATEGORY_TRAVEL: '여행',
+                                  CATEGORY_STUDY: '공부',
+                                }[e]!,
+                                style: const TextStyle(
+                                  color: PRIMARY_COLOR,
+                                  fontWeight: FontWeight.w500,
+                                )),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {},
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -531,27 +576,27 @@ class _Weather extends StatelessWidget {
   }
 }
 
-class _HashTags extends StatelessWidget {
+class _Hashtags extends StatelessWidget {
   final FormFieldSetter<String> onSaved;
   final String initialValue;
   final ValueChanged<String>? onChanged;
-  final List<String> hashTags;
+  final List<String> hashtags;
 
   final String hintText;
   final int maxLength;
 
-  const _HashTags({
+  const _Hashtags({
     required this.onSaved,
     required this.initialValue,
     required this.onChanged,
-    required this.hashTags,
+    required this.hashtags,
     required this.hintText,
     required this.maxLength,
   });
 
   @override
   Widget build(BuildContext context) {
-    final label = '해시태그(${_hashTagsToString(hashTags)})';
+    final label = '해시태그(${_hashtagsToString(hashtags)})';
     return CustomTextFormField(
       initialValue: initialValue,
       label: label,
@@ -562,12 +607,12 @@ class _HashTags extends StatelessWidget {
     );
   }
 
-  String _hashTagsToString(List<String> hashTags) {
+  String _hashtagsToString(List<String> hashtags) {
     String result = '';
-    for (int i = 0; i < hashTags.length; i++) {
-      if (hashTags[i] == '') continue;
-      result = "$result#${hashTags[i]}";
-      if (i != hashTags.length - 1) {
+    for (int i = 0; i < hashtags.length; i++) {
+      if (hashtags[i] == '') continue;
+      result = "$result#${hashtags[i]}";
+      if (i != hashtags.length - 1) {
         result += ' ';
       }
     }
