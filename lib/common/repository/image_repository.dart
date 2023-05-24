@@ -8,7 +8,7 @@ part 'image_repository.g.dart';
 
 final uploadRepositoryProvider = Provider<UploadRepository>((ref) {
   final dio = ref.read(dioProvider);
-  return UploadRepository(dio, baseUrl: 'http://$ip/upload');
+  return UploadRepository(dio, baseUrl: 'http://$ip/upload/diary/images');
 });
 
 @RestApi()

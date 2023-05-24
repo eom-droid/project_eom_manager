@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:manager/common/components/custom_text_form_field.dart';
 import 'package:manager/common/layout/loading_layout.dart';
@@ -11,19 +13,8 @@ import 'package:manager/common/layout/default_layout.dart';
 import 'package:manager/diary/components/diary_img_input.dart';
 import 'package:manager/diary/components/diary_txt_input.dart';
 import 'package:manager/diary/components/diary_vid_input.dart';
-
-class DiaryDetailScreen extends StatefulWidget {
-  static String get routeName => 'diaryDetail';
-  final String id;
-
-  const DiaryDetailScreen({
-    super.key,
-    required this.id,
-  });
-
-  @override
-  State<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
-}
+import 'package:manager/diary/model/diary_detail_model.dart';
+import 'package:manager/diary/provider/diary_provider.dart';
 
 class _ContentInput {
   String? contentType;
@@ -34,7 +25,20 @@ class _ContentInput {
   });
 }
 
-class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
+class DiaryDetailScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'diaryDetail';
+  final String id;
+
+  const DiaryDetailScreen({
+    super.key,
+    required this.id,
+  });
+
+  @override
+  ConsumerState<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
+}
+
+class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   final ScrollController scrollController = ScrollController();
 
@@ -48,6 +52,21 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   List<String> hashtags = [];
   List<_ContentInput> contents = [];
   String category = CATEGORY_DAILY;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    title = '테스트 메시지';
+    weather = '맑음';
+    hashtags.addAll(['안녕', '이거는', '테스트']);
+    contents.add(
+      _ContentInput(
+        contentType: CONTENT_TYPE_TXT,
+        controller: TextEditingController(text: '테스트 메시지\n테스트 메시지'),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -250,6 +269,11 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                 children: [
                   _Category(
                     category: category,
+                    onChanged: (value) {
+                      if (value != null) {
+                        category = value;
+                      }
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   _Title(
@@ -359,51 +383,62 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     });
 
     if (validate()) {
-      //   final List<String> txts = [];
-      //   final List<String> imgs = [];
-      //   final List<String> vids = [];
-      //   final List<String> contentOrder = [];
+      final List<String> txts = [];
+      final List<String> imgs = [];
+      final List<String> vids = [];
+      final List<String> contentOrder = [];
 
-      // DiaryService.addDiary(
-      //   DiaryDetailModel(
-      //   id: NEW_ID,
-      //   title: title,
-      //   writer: '엄태호',
-      //   weather: weather,
-      //   hashtags: hashtags,
-      //   postDate: postDate,
-      //   thumnail:'',
-      //   category: category,
-      //   isShown: true,
-      //   regDTime: DateTime.now(),
-      //   modDTime: DateTime.now(),
-      //   diaryId: NEW_ID,
-      //   txts: txts,
-      //   imgs: imgs,
-      //   vids: vids,
-      //   contentOrder: contentOrder,
-      // )
-      // );
+      List<MultipartFile> uploadFiles = [];
+
+      for (int i = 0; contents.length > i; i++) {
+        if (contents[i].contentType == CONTENT_TYPE_TXT) {
+          txts.add(contents[i].controller.text);
+          contentOrder.add(CONTENT_TYPE_TXT);
+        } else {
+          final String fileName = contents[i].controller.text.split('/').last;
+          uploadFiles.add(
+            await MultipartFile.fromFile(
+              contents[i].controller.text,
+              filename: fileName,
+            ),
+          );
+
+          if (contents[i].contentType == CONTENT_TYPE_IMG) {
+            imgs.add(fileName);
+            contentOrder.add(CONTENT_TYPE_IMG);
+          } else {
+            vids.add(fileName);
+            contentOrder.add(CONTENT_TYPE_VID);
+          }
+        }
+      }
+
+      ref.read(diaryProvider.notifier).addDiary(
+            diary: DiaryDetailModel(
+              id: NEW_ID,
+              title: title,
+              writer: '엄태호',
+              weather: weather,
+              hashtags: hashtags,
+              postDate: postDate,
+              thumnail: '',
+              category: category,
+              isShown: true,
+              regDTime: DateTime.now(),
+              modDTime: DateTime.now(),
+              diaryId: NEW_ID,
+              txts: txts,
+              imgs: imgs,
+              vids: vids,
+              contentOrder: contentOrder,
+            ),
+            uploadFiles: uploadFiles,
+          );
     }
 
     setState(() {
       isLoading = false;
     });
-    // if (formKey.currentContext == null) return;
-
-    // // final DiaryDetailModel state = ref.read(selectedDiaryProvider);
-
-    // // form 내 모든 필드의 validate를 실행
-    // if (formKey.currentState!.validate()) {
-    //   // form 내 모든 필드의 save를 실행
-    //   formKey.currentState!.save();
-    //   // final DiaryDetailModel savingDiaryDetailModel = DiaryDetailModel.empty();
-    //   // savingDiaryDetailModel.copyWith(
-    //   //   title: title,
-    //   // );
-
-    //   // ref.read(diaryProvider.notifier).addDiary(savingDiaryDetailModel);
-    // }
   }
 
   bool validate() {
@@ -449,8 +484,10 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
 class _Category extends StatelessWidget {
   final String category;
+  final ValueChanged<String?> onChanged;
   const _Category({
     required this.category,
+    required this.onChanged,
   });
 
   @override
@@ -487,7 +524,6 @@ class _Category extends StatelessWidget {
                     .map<DropdownMenuItem<String>>(
                       (e) => DropdownMenuItem<String>(
                         value: e,
-                        onTap: () => print(e),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Center(
@@ -506,7 +542,7 @@ class _Category extends StatelessWidget {
                       ),
                     )
                     .toList(),
-                onChanged: (value) {},
+                onChanged: onChanged,
               ),
             ),
           ),

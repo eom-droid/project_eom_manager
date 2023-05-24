@@ -19,17 +19,25 @@ class _DiaryRepository implements DiaryRepository {
   String? baseUrl;
 
   @override
-  Future<dynamic> addDiary({required diary}) async {
+  Future<dynamic> addDiary({
+    required diary,
+    required file,
+  }) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'accessToken': 'true'};
     _headers.removeWhere((k, v) => v == null);
-    final _data = <String, dynamic>{};
-    _data.addAll(diary.toJson());
+    final _data = FormData();
+    _data.fields.add(MapEntry(
+      'diary',
+      jsonEncode(diary),
+    ));
+    _data.files.addAll(file.map((i) => MapEntry('file', i)));
     final _result = await _dio.fetch(_setStreamType<dynamic>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
+      contentType: 'multipart/form-data',
     )
         .compose(
           _dio.options,
