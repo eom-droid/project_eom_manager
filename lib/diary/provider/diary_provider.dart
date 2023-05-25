@@ -39,11 +39,5 @@ class DiaryNotifier extends StateNotifier<List<DiaryModel>> {
       diary: diary.toJson(),
       file: uploadFiles,
     ));
-
-    // print(await uploadRepository.uploadImage(
-    //     folderName: 'diary/eom', files: uploadFiles));
-
-    // uploadRepository.uploadImage(folderName: 'diary/eom', files: )
-    // await repository.addDiary(diary: diary);
   }
 }

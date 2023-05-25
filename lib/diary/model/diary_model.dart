@@ -17,11 +17,11 @@ class DiaryModel {
   final List<String> hashtags;
   // postDate : 표출 일자 -> 다이어리의 표출 일자, 사용자는 해당 값으로 ordering을 진행할 예정
   final DateTime postDate;
-  // thumnail : 썸네일 -> S3에 저장된 이미지, vid 의 경로
+  // thumbnail : 썸네일 -> S3에 저장된 이미지, vid 의 경로
   @JsonKey(
     fromJson: DataUtils.pathToUrl,
   )
-  final String thumnail;
+  final String thumbnail;
   // category : 카테고리 -> 카테고리를 통해서 다이어리 리스트 페이지에서 필터링을 진행할 예정
   final String category;
   // isShown : 표출 여부
@@ -38,7 +38,7 @@ class DiaryModel {
     required this.weather,
     required this.hashtags,
     required this.postDate,
-    required this.thumnail,
+    required this.thumbnail,
     required this.category,
     required this.isShown,
     required this.regDTime,
@@ -52,7 +52,7 @@ class DiaryModel {
         weather: '',
         hashtags: [],
         postDate: DateTime.now(),
-        thumnail: '',
+        thumbnail: '',
         category: '',
         isShown: true,
         regDTime: DateTime.now(),

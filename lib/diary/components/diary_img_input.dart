@@ -7,9 +7,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 
 class DiaryImgInput extends StatefulWidget {
+  final Function(String?, bool) loadingTrigger;
   final TextEditingController controller;
 
-  const DiaryImgInput({Key? key, required this.controller}) : super(key: key);
+  const DiaryImgInput({
+    Key? key,
+    required this.controller,
+    required this.loadingTrigger,
+  }) : super(key: key);
 
   @override
   State<DiaryImgInput> createState() => _DiaryImgInputState();
@@ -31,9 +36,14 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Image.file(
-            File(widget.controller.text),
-            fit: BoxFit.cover,
+          Container(
+            // 사진이 불러와질때 순간적으로 0으로 사라지는 현상을 방지하기 위해 최소 높이를 지정
+            // 추후 rivderpod 사용 시 문제점 해결 예정
+            constraints: const BoxConstraints(minHeight: 300.0),
+            child: Image.file(
+              File(widget.controller.text),
+              fit: BoxFit.cover,
+            ),
           ),
           const SizedBox(height: 8.0),
           OutlinedButton(
@@ -69,6 +79,8 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
 
   // 비동기 처리를 통해 갤러리에서 이미지의 경로를 가져온다.
   getImagePath(ImageSource imageSource) async {
+    String? error;
+    widget.loadingTrigger(null, true);
     try {
       final image = await picker.pickImage(
         source: imageSource,
@@ -81,18 +93,20 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
         maxWidth: 1080,
       );
       if (image != null) {
-        setState(() {
-          widget.controller.text = image.path;
-        });
+        // 하단 loadingTrigger 실행 시 setState가 실행됨에 따라
+        // 따로 setState를 진행하지 않음
+        widget.controller.text = image.path;
       }
     } catch (e) {
       // 1. not supported image file(ex : heic)
       if (e is PlatformException) {
-        // print(e);
+        error = '지원하지 않는 이미지 파일입니다.';
       } else {
+        error = '예기치 못한 오류가 발생했습니다.';
         print(e);
       }
       widget.controller.text = '';
     }
+    widget.loadingTrigger(error, false);
   }
 }
