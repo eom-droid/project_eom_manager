@@ -8,7 +8,7 @@ part of 'diary_detail_model.dart';
 
 DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
     DiaryDetailModel(
-      id: json['id'] as String,
+      id: json['_id'] as String,
       title: json['title'] as String,
       writer: json['writer'] as String,
       weather: json['weather'] as String,
@@ -18,8 +18,6 @@ DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
       thumbnail: DataUtils.pathToUrl(json['thumbnail'] as String),
       category: json['category'] as String,
       isShown: json['isShown'] as bool,
-      regDTime: DateTime.parse(json['regDTime'] as String),
-      modDTime: DateTime.parse(json['modDTime'] as String),
       diaryId: json['diaryId'] as String,
       txts: (json['txts'] as List<dynamic>).map((e) => e as String).toList(),
       imgs: DataUtils.listPathsToUrls(json['imgs'] as List),
@@ -31,7 +29,7 @@ DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$DiaryDetailModelToJson(DiaryDetailModel instance) =>
     <String, dynamic>{
-      'id': instance.id,
+      '_id': instance.id,
       'title': instance.title,
       'writer': instance.writer,
       'weather': instance.weather,
@@ -40,8 +38,6 @@ Map<String, dynamic> _$DiaryDetailModelToJson(DiaryDetailModel instance) =>
       'thumbnail': instance.thumbnail,
       'category': instance.category,
       'isShown': instance.isShown,
-      'regDTime': instance.regDTime.toIso8601String(),
-      'modDTime': instance.modDTime.toIso8601String(),
       'diaryId': instance.diaryId,
       'txts': instance.txts,
       'imgs': instance.imgs,

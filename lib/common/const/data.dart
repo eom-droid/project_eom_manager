@@ -15,22 +15,22 @@ const accessToken = 'ProjectEomManagerAccessToken';
 
 const NEW_ID = "NEW";
 
-enum ContentType {
+enum DiaryContentType {
   txt('txt', '텍스트'),
   img('img', '이미지'),
   vid('vid', '비디오');
 
   final String value;
   final String koreanValue;
-  const ContentType(this.value, this.koreanValue);
+  const DiaryContentType(this.value, this.koreanValue);
 }
 
-enum Category {
+enum DiaryCategory {
   daily('daily', '일상'),
   travel('travel', '여행'),
   study('study', '공부');
 
   final String value;
   final String koreanValue;
-  const Category(this.value, this.koreanValue);
+  const DiaryCategory(this.value, this.koreanValue);
 }

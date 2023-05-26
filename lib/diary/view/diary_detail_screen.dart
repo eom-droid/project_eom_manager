@@ -20,7 +20,7 @@ import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
 
 class _ContentInput {
-  ContentType? contentType;
+  DiaryContentType? contentType;
   TextEditingController controller;
   _ContentInput({
     required this.contentType,
@@ -52,7 +52,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   String weather = '';
   List<String> hashtags = [];
   List<_ContentInput> contents = [];
-  Category category = Category.daily;
+  DiaryCategory category = DiaryCategory.daily;
   int thumbnailIndex = -1;
   @override
   void initState() {
@@ -64,7 +64,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
     hashtags.addAll(['안녕', '이거는', '테스트']);
     contents.add(
       _ContentInput(
-        contentType: ContentType.txt,
+        contentType: DiaryContentType.txt,
         controller: TextEditingController(text: '테스트 메시지\n테스트 메시지'),
       ),
     );
@@ -241,7 +241,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
               children: [
                 DiaryEditDetailCard(
                   headerRightWidget:
-                      contents[index].contentType != ContentType.txt
+                      contents[index].contentType != DiaryContentType.txt
                           ? Row(
                               children: [
                                 const Text('썸네일 : '),
@@ -315,9 +315,9 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
       List<MultipartFile> uploadFiles = [];
 
       for (int i = 0; contents.length > i; i++) {
-        if (contents[i].contentType == ContentType.txt) {
+        if (contents[i].contentType == DiaryContentType.txt) {
           txts.add(contents[i].controller.text);
-          contentOrder.add(ContentType.txt.value);
+          contentOrder.add(DiaryContentType.txt.value);
         } else {
           final String fileName = contents[i].controller.text.split('/').last;
           uploadFiles.add(
@@ -327,12 +327,12 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
             ),
           );
 
-          if (contents[i].contentType == ContentType.img) {
+          if (contents[i].contentType == DiaryContentType.img) {
             imgs.add(fileName);
-            contentOrder.add(ContentType.img.value);
+            contentOrder.add(DiaryContentType.img.value);
           } else {
             vids.add(fileName);
-            contentOrder.add(ContentType.vid.value);
+            contentOrder.add(DiaryContentType.vid.value);
           }
         }
       }
@@ -349,8 +349,6 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                   contents[thumbnailIndex].controller.text.split('/').last,
               category: category.value,
               isShown: true,
-              regDTime: DateTime.now(),
-              modDTime: DateTime.now(),
               diaryId: NEW_ID,
               txts: txts,
               imgs: imgs,
@@ -431,11 +429,11 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
   @override
   Widget build(BuildContext context) {
     switch (widget.contentInput.contentType) {
-      case ContentType.txt:
+      case DiaryContentType.txt:
         return DiaryTxtInput(
           controller: widget.contentInput.controller,
         );
-      case ContentType.img:
+      case DiaryContentType.img:
         return DiaryImgInput(
           loadingTrigger: (error, value) {
             if (error != null) {
@@ -447,10 +445,10 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
           },
           controller: widget.contentInput.controller,
         );
-      case ContentType.vid:
+      case DiaryContentType.vid:
         return const DiaryVidInput();
       default:
-        return renderDefaultContentInput(callback: (ContentType value) {
+        return renderDefaultContentInput(callback: (DiaryContentType value) {
           setState(() {
             widget.contentInput.contentType = value;
           });
@@ -459,7 +457,7 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
   }
 
   Widget renderDefaultContentInput({
-    required Function(ContentType) callback,
+    required Function(DiaryContentType) callback,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -469,13 +467,22 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
           const SizedBox(height: 16.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: ContentType.values
+            children: DiaryContentType.values
                 .map<OutlinedButton>(
-                  (ContentType e) => OutlinedButton(
-                    style: e != ContentType.vid
+                  (DiaryContentType e) => OutlinedButton(
+                    style: e != DiaryContentType.vid
                         ? customOutlinedButtonStyle
-                        : customOutlinedButtonStyle.copyWith(),
-                    onPressed: e != ContentType.vid ? callback(e) : null,
+                        : customOutlinedButtonStyle.copyWith(
+                            foregroundColor:
+                                MaterialStateProperty.all(BODY_TEXT_COLOR),
+                            side: MaterialStateProperty.all(
+                              const BorderSide(
+                                color: BODY_TEXT_COLOR,
+                              ),
+                            ),
+                          ),
+                    onPressed:
+                        e != DiaryContentType.vid ? () => callback(e) : null,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 12.0),
@@ -492,8 +499,8 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
 }
 
 class _Category extends StatefulWidget {
-  final Category initValue;
-  final ValueChanged<Category> onChanged;
+  final DiaryCategory initValue;
+  final ValueChanged<DiaryCategory> onChanged;
   const _Category({
     required this.initValue,
     required this.onChanged,
@@ -504,7 +511,7 @@ class _Category extends StatefulWidget {
 }
 
 class _CategoryState extends State<_Category> {
-  late Category category;
+  late DiaryCategory category;
 
   @override
   void initState() {
@@ -540,9 +547,9 @@ class _CategoryState extends State<_Category> {
                 iconSize: 20.0,
                 value: category,
                 isExpanded: true,
-                items: Category.values
-                    .map<DropdownMenuItem<Category>>(
-                      (Category e) => DropdownMenuItem<Category>(
+                items: DiaryCategory.values
+                    .map<DropdownMenuItem<DiaryCategory>>(
+                      (DiaryCategory e) => DropdownMenuItem<DiaryCategory>(
                         value: e,
                         child: Center(
                           child: Text(
@@ -556,7 +563,7 @@ class _CategoryState extends State<_Category> {
                       ),
                     )
                     .toList(),
-                onChanged: (Category? value) {
+                onChanged: (DiaryCategory? value) {
                   if (value != null) {
                     setState(() {
                       category = value;

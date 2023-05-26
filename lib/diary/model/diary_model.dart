@@ -6,6 +6,7 @@ part 'diary_model.g.dart';
 @JsonSerializable()
 class DiaryModel {
   // id : 유일 아이디 값
+  @JsonKey(name: '_id')
   final String id;
   // title : 제목
   final String title;
@@ -26,10 +27,11 @@ class DiaryModel {
   final String category;
   // isShown : 표출 여부
   final bool isShown;
-  // regDTime : 등록 일자 -> 추후 mongoDB default 값 사용 예정
-  final DateTime regDTime;
-  // modDTime : 수정 일자 -> 추후 mongoDB default 값 사용 예정
-  final DateTime modDTime;
+  // client에서 별로 필요없을듯
+  // // regDTime : 등록 일자 -> 추후 mongoDB default 값 사용 예정
+  // final DateTime regDTime;
+  // // modDTime : 수정 일자 -> 추후 mongoDB default 값 사용 예정
+  // final DateTime modDTime;
 
   DiaryModel({
     required this.id,
@@ -41,8 +43,6 @@ class DiaryModel {
     required this.thumbnail,
     required this.category,
     required this.isShown,
-    required this.regDTime,
-    required this.modDTime,
   });
 
   factory DiaryModel.empty() => DiaryModel(
@@ -55,8 +55,6 @@ class DiaryModel {
         thumbnail: '',
         category: '',
         isShown: true,
-        regDTime: DateTime.now(),
-        modDTime: DateTime.now(),
       );
 
   factory DiaryModel.fromJson(Map<String, dynamic> json) =>

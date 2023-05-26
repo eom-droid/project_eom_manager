@@ -6,6 +6,7 @@ import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/dio/dio.dart';
+import 'package:manager/diary/model/diary_model.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'diary_repository.g.dart';
@@ -19,11 +20,11 @@ final diaryRepositoryProvider = Provider<DiaryRepository>((ref) {
 abstract class DiaryRepository {
   factory DiaryRepository(Dio dio, {String baseUrl}) = _DiaryRepository;
 
-  // @GET('/')
-  // @Headers({
-  //   'accessToken': 'true',
-  // })
-  // Future<DiaryModel> getDiary();
+  @GET('/')
+  @Headers({
+    'accessToken': 'true',
+  })
+  Future<List<DiaryModel>> getDiarys();
 
   @POST('/')
   @Headers({

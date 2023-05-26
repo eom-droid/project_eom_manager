@@ -29,7 +29,14 @@ class DiaryNotifier extends StateNotifier<List<DiaryModel>> {
 
   DiaryNotifier({
     required this.diaryRepository,
-  }) : super([]);
+  }) : super([]) {
+    getDiarys();
+  }
+
+  Future<void> getDiarys() async {
+    final diaryList = await diaryRepository.getDiarys();
+    state = diaryList;
+  }
 
   Future<void> addDiary({
     required DiaryDetailModel diary,
