@@ -23,4 +23,9 @@ class DataUtils {
   static DateTime stringToDateTime(String value) {
     return DateTime.parse(value);
   }
+
+  static DateTime toLocalTimeZone(String value) {
+    return stringToDateTime(value).toLocal();
+    // return value.toLocal();
+  }
 }

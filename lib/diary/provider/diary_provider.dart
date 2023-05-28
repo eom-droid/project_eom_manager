@@ -1,50 +1,92 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:manager/common/model/cursor_pagination_model.dart';
+import 'package:manager/common/provider/pagination_provider.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
-import 'package:collection/collection.dart';
 import 'package:manager/diary/repository/diary_repository.dart';
 
-final diaryDetailProvider = Provider.family<DiaryModel?, String>((ref, id) {
-  final state = ref.watch(diaryProvider);
+// final diaryDetailProvider = Provider.family<DiaryModel?, String>((ref, id) {
+//   final state = ref.watch(diaryProvider);
 
-  //레스토랑 프로젝트에서 해당 줄을 추가하였는데 이유가 뭔지 궁금하네.....
-  // if(state is! CursorPagination){
-  //   return null;
-  // }
+//   // 레스토랑 프로젝트에서 해당 줄을 추가하였는데 이유가 뭔지 궁금하네.....
+//   if(state is! CursorPagination){
+//     return null;
+//   }
 
-  return state.firstWhereOrNull((element) => element.id == id);
-});
+//   return state.firstWhereOrNull((element) => element.id == id);
+// });
 
 final diaryProvider =
-    StateNotifierProvider<DiaryNotifier, List<DiaryModel>>((ref) {
+    StateNotifierProvider<DiaryStateNotifier, CursorPaginationBase>((ref) {
   final diaryRepository = ref.watch(diaryRepositoryProvider);
-  return DiaryNotifier(
-    diaryRepository: diaryRepository,
+  return DiaryStateNotifier(
+    repository: diaryRepository,
   );
 });
 
-class DiaryNotifier extends StateNotifier<List<DiaryModel>> {
-  final DiaryRepository diaryRepository;
+class DiaryStateNotifier
+    extends PaginationProvider<DiaryModel, DiaryRepository> {
+  DiaryStateNotifier({
+    required super.repository,
+  });
 
-  DiaryNotifier({
-    required this.diaryRepository,
-  }) : super([]) {
-    getDiarys();
-  }
+  void getDetail({
+    required String id,
+  }) async {
+    // 만약 데이터가 없는 상태라면
+    // 데이터를 가져오는 함수를 실행한다.
+    if (state is! CursorPagination) {
+      await paginate();
+    }
 
-  Future<void> getDiarys() async {
-    final diaryList = await diaryRepository.getDiarys();
-    state = diaryList;
+    // state가 Cursorpagination이 아닐경우 그냥 리턴
+    if (state is! CursorPagination) {
+      return;
+    }
+
+    final pState = state as CursorPagination;
+
+    // 추후 데이터의 저장 형태에 따라서 다르게 처리할 예정
+    final resp = await repository.getDiaryDetail(id: id);
+
+    // [DiaryModel(1), DiaryModel(2), DiaryModel(3)]
+    // 요청 id: 10
+    // list.where((e)=> e.id== 10) 데이터 X
+    // 데이터가 없을때는 그냥 캐시의 끝에다가 데이터를 추가해버린다.
+    // [DiaryModel(1), DiaryModel(2), DiaryModel(3),DiaryDetailModel(10)]
+    // 이렇게 접근하는 경우는 없을거라서 없을것으로 예상됨
+    if (pState.data.where((element) => element.id == id).isEmpty) {
+      state = pState.copyWith(
+        data: <DiaryModel>[
+          ...pState.data,
+          resp,
+        ],
+      );
+    } else {
+      // [RestaurantModel(1), RestaurantModel(2), RestaurantModel(3)]
+      // id : 2인 친구를 Detail모델로 가져와라
+      // getDetail(id:2)
+      // [RestaurantModel(1), RestaurantDetailModel(2), RestaurantModel(3)]
+      state = pState.copyWith(
+        data: pState.data
+            .map<DiaryModel>(
+              (e) => e.id == id ? resp : e,
+            )
+            .toList(),
+      );
+    }
   }
 
   Future<void> addDiary({
     required DiaryDetailModel diary,
     required List<MultipartFile> uploadFiles,
   }) async {
-    print(await diaryRepository.addDiary(
-      diary: diary.toJson(),
-      file: uploadFiles,
-    ));
+    print(
+      await super.repository.addDiary(
+            diary: diary.toJson(),
+            file: uploadFiles,
+          ),
+    );
   }
 }

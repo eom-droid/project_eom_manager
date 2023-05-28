@@ -14,7 +14,7 @@ DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
       weather: json['weather'] as String,
       hashtags:
           (json['hashtags'] as List<dynamic>).map((e) => e as String).toList(),
-      postDate: DateTime.parse(json['postDate'] as String),
+      postDate: DataUtils.toLocalTimeZone(json['postDate'] as String),
       thumbnail: DataUtils.pathToUrl(json['thumbnail'] as String),
       category: json['category'] as String,
       isShown: json['isShown'] as bool,

@@ -1,11 +1,13 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:manager/common/model/model_with_id.dart';
 import 'package:manager/common/utils/data_utils.dart';
 
 part 'diary_model.g.dart';
 
 @JsonSerializable()
-class DiaryModel {
+class DiaryModel implements IModelWithId {
   // id : 유일 아이디 값
+  @override
   @JsonKey(name: '_id')
   final String id;
   // title : 제목
@@ -17,6 +19,11 @@ class DiaryModel {
   // hashtags : 해시태그 리스트
   final List<String> hashtags;
   // postDate : 표출 일자 -> 다이어리의 표출 일자, 사용자는 해당 값으로 ordering을 진행할 예정
+  // read 해오는 경우 서버에서 UTC로 보내주기 때문에 local time zone으로 변경
+  // write 경우는 따로 파싱을 하지 않음 -> 서버에서 저장 시 MongoDB가 자체적으로 UTC로 변경하여 저장
+  @JsonKey(
+    fromJson: DataUtils.toLocalTimeZone,
+  )
   final DateTime postDate;
   // thumbnail : 썸네일 -> S3에 저장된 이미지, vid 의 경로
   @JsonKey(
