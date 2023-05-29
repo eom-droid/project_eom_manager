@@ -28,4 +28,8 @@ class DataUtils {
     return stringToDateTime(value).toLocal();
     // return value.toLocal();
   }
+
+  static DateTime dateOnly(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
 }

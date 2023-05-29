@@ -9,6 +9,7 @@ import 'package:manager/common/components/custom_animated_switch.dart';
 import 'package:manager/common/components/custom_text_form_field.dart';
 import 'package:manager/common/layout/loading_layout.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
+import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/components/diary_edit_detail_card.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
@@ -48,7 +49,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   bool isLoading = false;
 
   String title = '';
-  DateTime postDate = DateTime.now();
+  DateTime postDT = DataUtils.dateOnly(DateTime.now());
   String weather = '';
   List<String> hashtags = [];
   List<_ContentInput> contents = [];
@@ -56,7 +57,6 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   int thumbnailIndex = -1;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     title = '테스트 메시지';
@@ -163,9 +163,9 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                     children: [
                       Expanded(
                         child: _PostDate(
-                          initValue: postDate,
+                          initValue: postDT,
                           onChanged: (DateTime value) {
-                            postDate = value;
+                            postDT = value;
                           },
                         ),
                       ),
@@ -344,9 +344,11 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
               writer: '엄태호',
               weather: weather,
               hashtags: hashtags,
-              postDate: postDate,
-              thumbnail:
-                  contents[thumbnailIndex].controller.text.split('/').last,
+              postDT: postDT,
+              thumbnail: thumbnailIndex == -1
+                  ? null
+                  : contents[thumbnailIndex].controller.text.split('/').last,
+              postDateInd: -1,
               category: category.value,
               isShown: true,
               diaryId: NEW_ID,

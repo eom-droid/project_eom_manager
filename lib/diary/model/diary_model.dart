@@ -24,12 +24,14 @@ class DiaryModel implements IModelWithId {
   @JsonKey(
     fromJson: DataUtils.toLocalTimeZone,
   )
-  final DateTime postDate;
+  final DateTime postDT;
+  // postDateInd : 같은 날짜의 다이어리 리스트에서의 index
+  final int postDateInd;
   // thumbnail : 썸네일 -> S3에 저장된 이미지, vid 의 경로
   @JsonKey(
     fromJson: DataUtils.pathToUrl,
   )
-  final String thumbnail;
+  final String? thumbnail;
   // category : 카테고리 -> 카테고리를 통해서 다이어리 리스트 페이지에서 필터링을 진행할 예정
   final String category;
   // isShown : 표출 여부
@@ -46,7 +48,8 @@ class DiaryModel implements IModelWithId {
     required this.writer,
     required this.weather,
     required this.hashtags,
-    required this.postDate,
+    required this.postDT,
+    required this.postDateInd,
     required this.thumbnail,
     required this.category,
     required this.isShown,
@@ -58,7 +61,8 @@ class DiaryModel implements IModelWithId {
         writer: '',
         weather: '',
         hashtags: [],
-        postDate: DateTime.now(),
+        postDateInd: -1,
+        postDT: DateTime.now(),
         thumbnail: '',
         category: '',
         isShown: true,

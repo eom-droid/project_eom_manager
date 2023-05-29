@@ -17,7 +17,7 @@ part 'diary_repository.g.dart';
 
 final diaryRepositoryProvider = Provider<DiaryRepository>((ref) {
   final dio = ref.read(dioProvider);
-  return DiaryRepository(dio, baseUrl: 'http://$ip/api/v1/diary');
+  return DiaryRepository(dio, baseUrl: 'http://$ip/api/v1/diaries');
 });
 
 @RestApi()

@@ -3,14 +3,14 @@ import 'package:manager/diary/model/diary_model.dart';
 
 class DiaryCard extends StatelessWidget {
   final DateTime postDate;
-  final String thumbnail;
+  final String? thumbnail;
   final List<String> hashtags;
   final String title;
 
   const DiaryCard({
     Key? key,
     required this.postDate,
-    required this.thumbnail,
+    this.thumbnail,
     required this.hashtags,
     required this.title,
   }) : super(key: key);
@@ -19,7 +19,7 @@ class DiaryCard extends StatelessWidget {
     required DiaryModel model,
   }) {
     return DiaryCard(
-      postDate: model.postDate,
+      postDate: model.postDT,
       thumbnail: model.thumbnail,
       hashtags: model.hashtags,
       title: model.title,
