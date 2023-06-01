@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:manager/common/view/root_tab.dart';
 import 'package:manager/common/view/splash_screen.dart';
 import 'package:manager/diary/view/diary_detail_screen.dart';
+import 'package:manager/diary/view/diary_edit_screen.dart';
 
 final routerProvider = ChangeNotifierProvider<RouterProvider>((ref) {
   return RouterProvider(ref: ref);
@@ -32,7 +33,14 @@ class RouterProvider extends ChangeNotifier {
               builder: (_, state) => DiaryDetailScreen(
                 id: state.pathParameters['rid']!,
               ),
-            )
+            ),
+            GoRoute(
+              path: 'diary/:rid/edit',
+              name: DiaryEditScreen.routeName,
+              builder: (_, state) => DiaryEditScreen(
+                id: state.pathParameters['rid']!,
+              ),
+            ),
           ],
         ),
         GoRoute(

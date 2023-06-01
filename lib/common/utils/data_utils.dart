@@ -1,7 +1,15 @@
 import 'dart:convert';
 
+import 'package:manager/common/const/data.dart';
+
 class DataUtils {
   static String pathToUrl(String value) {
+    // return 'https://s3.ap-northeast-2.amazonaws.com/taeho-diary/$value';
+    // 추후 s3에 업로드할 예정
+    return value;
+  }
+
+  static String? pathToUrlNullable(String? value) {
     // return 'https://s3.ap-northeast-2.amazonaws.com/taeho-diary/$value';
     // 추후 s3에 업로드할 예정
     return value;
@@ -31,5 +39,23 @@ class DataUtils {
 
   static DateTime dateOnly(DateTime date) {
     return DateTime(date.year, date.month, date.day);
+  }
+
+  static List<DiaryContentType> listStringToListDiaryContentType(
+      List<dynamic> value) {
+    return value.map((e) => DiaryContentType.getByCode(e)).toList();
+  }
+
+  static List<String> listDiaryContentTypeToListString(
+      List<DiaryContentType> value) {
+    return value.map((e) => e.value).toList();
+  }
+
+  static DiaryCategory stringToDiaryCategory(String value) {
+    return DiaryCategory.getByCode(value);
+  }
+
+  static String diaryCategoryToString(DiaryCategory value) {
+    return value.value;
   }
 }

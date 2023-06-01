@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/dio/dio.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
-import 'package:manager/common/model/pagination_params.dart';
 import 'package:manager/common/repository/base_pagination_repository.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
+import 'package:manager/diary/model/pagination_params_diary.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'diary_repository.g.dart';
@@ -22,16 +22,18 @@ final diaryRepositoryProvider = Provider<DiaryRepository>((ref) {
 
 @RestApi()
 abstract class DiaryRepository
-    implements IBasePaginationRepository<DiaryModel> {
+    implements IBasePaginationRepository<DiaryModel, PaginationParamsDiary> {
   factory DiaryRepository(Dio dio, {String baseUrl}) = _DiaryRepository;
 
+  // diary pagination는
   @override
   @GET('/')
   @Headers({
     'accessToken': 'true',
   })
   Future<CursorPagination<DiaryModel>> paginate({
-    @Queries() PaginationParams? paginationParams = const PaginationParams(),
+    @Queries()
+        PaginationParamsDiary? paginationParams = const PaginationParamsDiary(),
   });
 
   @GET('/{id}')

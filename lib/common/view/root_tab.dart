@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/diary/view/diary_detail_screen.dart';
+import 'package:manager/diary/view/diary_edit_screen.dart';
 import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/home/view/home_screen.dart';
 import 'package:manager/music/view/play_list_screen.dart';
@@ -53,7 +53,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
           onPressed: () {
             if (controller.index == 1) {
               context.pushNamed(
-                DiaryDetailScreen.routeName,
+                DiaryEditScreen.routeName,
                 pathParameters: {'rid': NEW_ID},
               );
             } else {

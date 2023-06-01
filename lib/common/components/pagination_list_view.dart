@@ -5,13 +5,13 @@ import 'package:manager/common/model/model_with_id.dart';
 import 'package:manager/common/provider/pagination_provider.dart';
 import 'package:manager/common/utils/pagination_utils.dart';
 
-typedef PaginationWidgetBuilder<T extends IModelWithId> = Widget Function(
+typedef PaginationWidgetBuilder<T extends IModelPagination> = Widget Function(
   BuildContext context,
   int index,
   T model,
 );
 
-class PaginationListView<T extends IModelWithId>
+class PaginationListView<T extends IModelPagination>
     extends ConsumerStatefulWidget {
   final StateNotifierProvider<PaginationProvider, CursorPaginationBase>
       provider;
@@ -27,7 +27,7 @@ class PaginationListView<T extends IModelWithId>
       _PaginationListViewState<T>();
 }
 
-class _PaginationListViewState<T extends IModelWithId>
+class _PaginationListViewState<T extends IModelPagination>
     extends ConsumerState<PaginationListView> {
   final ScrollController controller = ScrollController();
 

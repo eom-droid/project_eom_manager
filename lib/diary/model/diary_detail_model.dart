@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:manager/common/const/data.dart';
 import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/model/diary_model.dart';
 
@@ -6,9 +7,6 @@ part 'diary_detail_model.g.dart';
 
 @JsonSerializable()
 class DiaryDetailModel extends DiaryModel {
-  // diaryId : diary Id
-  final String diaryId;
-
   // txts : 텍스트 리스트
   final List<String> txts;
 
@@ -22,7 +20,11 @@ class DiaryDetailModel extends DiaryModel {
   // contentOrder : 컨텐츠 순서
   // 추후 markdown 형식으로 저장할 예정
   // 현재는 위 3가지 txt,img,vid의 표출 순서를 정의
-  final List<String> contentOrder;
+  @JsonKey(
+    fromJson: DataUtils.listStringToListDiaryContentType,
+    toJson: DataUtils.listDiaryContentTypeToListString,
+  )
+  final List<DiaryContentType> contentOrder;
 
   DiaryDetailModel({
     required super.id,
@@ -35,7 +37,6 @@ class DiaryDetailModel extends DiaryModel {
     required super.thumbnail,
     required super.category,
     required super.isShown,
-    required this.diaryId,
     required this.txts,
     required this.imgs,
     required this.vids,
@@ -43,17 +44,16 @@ class DiaryDetailModel extends DiaryModel {
   });
 
   factory DiaryDetailModel.empty() => DiaryDetailModel(
-        id: 'temp',
-        title: 'temp',
+        id: '',
+        title: '',
         writer: '엄태호',
-        weather: 'temp',
+        weather: '',
         hashtags: [],
         postDT: DateTime.now(),
         postDateInd: -1,
-        thumbnail: 'temp',
-        category: 'temp',
+        thumbnail: '',
+        category: DiaryCategory.daily,
         isShown: true,
-        diaryId: 'temp',
         txts: [],
         imgs: [],
         vids: [],
@@ -69,13 +69,12 @@ class DiaryDetailModel extends DiaryModel {
     DateTime? postDT,
     int? postDateInd,
     String? thumbnail,
-    String? category,
+    DiaryCategory? category,
     bool? isShown,
-    String? diaryId,
     List<String>? txts,
     List<String>? imgs,
     List<String>? vids,
-    List<String>? contentOrder,
+    List<DiaryContentType>? contentOrder,
   }) {
     return DiaryDetailModel(
       id: id ?? this.id,
@@ -88,7 +87,6 @@ class DiaryDetailModel extends DiaryModel {
       thumbnail: thumbnail ?? this.thumbnail,
       category: category ?? this.category,
       isShown: isShown ?? this.isShown,
-      diaryId: diaryId ?? this.diaryId,
       txts: txts ?? this.txts,
       imgs: imgs ?? this.imgs,
       vids: vids ?? this.vids,

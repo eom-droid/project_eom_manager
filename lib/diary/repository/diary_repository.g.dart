@@ -20,7 +20,7 @@ class _DiaryRepository implements DiaryRepository {
 
   @override
   Future<CursorPagination<DiaryModel>> paginate(
-      {paginationParams = const PaginationParams()}) async {
+      {paginationParams = const PaginationParamsDiary()}) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     queryParameters.addAll(paginationParams?.toJson() ?? <String, dynamic>{});

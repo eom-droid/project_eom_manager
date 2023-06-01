@@ -16,16 +16,14 @@ DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
           (json['hashtags'] as List<dynamic>).map((e) => e as String).toList(),
       postDT: DataUtils.toLocalTimeZone(json['postDT'] as String),
       postDateInd: json['postDateInd'] as int,
-      thumbnail: DataUtils.pathToUrl(json['thumbnail'] as String),
-      category: json['category'] as String,
+      thumbnail: DataUtils.pathToUrlNullable(json['thumbnail'] as String?),
+      category: DataUtils.stringToDiaryCategory(json['category'] as String),
       isShown: json['isShown'] as bool,
-      diaryId: json['diaryId'] as String,
       txts: (json['txts'] as List<dynamic>).map((e) => e as String).toList(),
       imgs: DataUtils.listPathsToUrls(json['imgs'] as List),
       vids: DataUtils.listPathsToUrls(json['vids'] as List),
-      contentOrder: (json['contentOrder'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
+      contentOrder: DataUtils.listStringToListDiaryContentType(
+          json['contentOrder'] as List),
     );
 
 Map<String, dynamic> _$DiaryDetailModelToJson(DiaryDetailModel instance) =>
@@ -38,11 +36,11 @@ Map<String, dynamic> _$DiaryDetailModelToJson(DiaryDetailModel instance) =>
       'postDT': instance.postDT.toIso8601String(),
       'postDateInd': instance.postDateInd,
       'thumbnail': instance.thumbnail,
-      'category': instance.category,
+      'category': DataUtils.diaryCategoryToString(instance.category),
       'isShown': instance.isShown,
-      'diaryId': instance.diaryId,
       'txts': instance.txts,
       'imgs': instance.imgs,
       'vids': instance.vids,
-      'contentOrder': instance.contentOrder,
+      'contentOrder':
+          DataUtils.listDiaryContentTypeToListString(instance.contentOrder),
     };

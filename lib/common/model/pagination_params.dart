@@ -2,27 +2,30 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'pagination_params.g.dart';
 
-@JsonSerializable()
-class PaginationParams {
-  final String? after;
+class PaginationParamsBase {
   final int? count;
 
-  const PaginationParams({
-    this.after,
+  const PaginationParamsBase({
     this.count,
   });
+}
 
+@JsonSerializable()
+class PaginationParams extends PaginationParamsBase {
+  final String? after;
+
+  const PaginationParams({
+    super.count,
+    this.after,
+  });
   PaginationParams copyWith({
-    String? after,
     int? count,
+    String? after,
   }) =>
       PaginationParams(
         after: after ?? this.after,
         count: count ?? this.count,
       );
-
-  factory PaginationParams.fromJson(Map<String, dynamic> json) =>
-      _$PaginationParamsFromJson(json);
 
   Map<String, dynamic> toJson() => _$PaginationParamsToJson(this);
 }

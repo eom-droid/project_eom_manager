@@ -4,6 +4,7 @@ import 'package:manager/common/model/pagination_params.dart';
 import 'package:manager/common/repository/base_pagination_repository.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:manager/diary/model/pagination_params_diary.dart';
 
 // 페이지네이션 요청을 위한 정보 클래스
 class _PaginationInfo {
@@ -15,14 +16,16 @@ class _PaginationInfo {
   final bool forceRefetch;
 
   _PaginationInfo({
-    this.fetchCount = 20,
+    this.fetchCount = 10,
     this.fetchMore = false,
     this.forceRefetch = false,
   });
 }
 
-class PaginationProvider<T extends IModelWithId,
-        U extends IBasePaginationRepository<T>>
+class PaginationProvider<
+        T extends IModelPagination,
+        U extends IBasePaginationRepository<T, P>,
+        P extends PaginationParamsBase>
     extends StateNotifier<CursorPaginationBase> {
   final U repository;
   final paginationThrottle = Throttle(
@@ -41,7 +44,7 @@ class PaginationProvider<T extends IModelWithId,
   }
 
   Future<void> paginate({
-    int fetchCount = 20,
+    int fetchCount = 10,
     // 추가로 데이터 더 가져오기
     // ture - 추가로 데이터 가져오기
     // false - 새로고침(현재 상태를 덮어씌움)
@@ -97,9 +100,8 @@ class PaginationProvider<T extends IModelWithId,
       }
 
       // 3번 반환 상황
-      PaginationParams paginationParams = PaginationParams(
-        count: fetchCount,
-      );
+      // count를 넣어줘야됨
+      P? paginationParams;
 
       // fetchMore 상황
       // 데이터를 추가로 더 가져오기
@@ -110,10 +112,8 @@ class PaginationProvider<T extends IModelWithId,
           meta: pState.meta,
           data: pState.data,
         );
-
-        paginationParams = paginationParams.copyWith(
-          after: pState.data.last.id,
-        );
+        paginationParams =
+            generateParams(pState.data.lastOrNull, fetchCount, fetchMore);
       }
       // 처음부터 데이터를 가져오는 상황
       else {
@@ -132,8 +132,8 @@ class PaginationProvider<T extends IModelWithId,
         else {
           state = CursorPaginationLoading();
         }
+        paginationParams = generateParams(null, fetchCount, fetchMore);
       }
-
       final resp = await repository.paginate(
         paginationParams: paginationParams,
       );
@@ -143,6 +143,7 @@ class PaginationProvider<T extends IModelWithId,
         final pState = state as CursorPaginationFetchingMore<T>;
 
         // 뒤에 추가하기
+        // Meta 포함
         state = resp.copyWith(data: [
           ...pState.data,
           ...resp.data,
@@ -157,6 +158,37 @@ class PaginationProvider<T extends IModelWithId,
       print(e);
       print(stack);
       state = CursorPaginationError(message: '데이터 가져오기 실패');
+    }
+  }
+
+  P generateParams(
+    T? pState,
+    int fetchCount,
+    bool fetchMore,
+  ) {
+    if (P == PaginationParamsDiary) {
+      if (pState == null) {
+        return PaginationParamsDiary(
+          count: fetchCount,
+        ) as P;
+      }
+      final value = pState as IModelWithPostDTAndPostDateInd;
+      return PaginationParamsDiary(
+        postDT: fetchMore ? value.postDT : null,
+        postDateInd: fetchMore ? value.postDateInd : null,
+        count: fetchCount,
+      ) as P;
+    } else {
+      if (pState == null) {
+        return PaginationParams(
+          count: fetchCount,
+        ) as P;
+      }
+      final value = pState as IModelWithId;
+      return PaginationParams(
+        after: fetchMore ? value.id : null,
+        count: fetchCount,
+      ) as P;
     }
   }
 }

@@ -6,15 +6,16 @@ class DefaultLayout extends StatelessWidget {
   final String? title;
   final Widget? bottomNavigationBar;
   final Widget? floatingActionButton;
-  final List<Widget>? AppBarActions;
+  final List<Widget>? appBarActions;
   final bool isFullScreen;
+
   const DefaultLayout({
     super.key,
     required this.child,
     this.bottomNavigationBar,
     this.backgroundColor,
     this.title,
-    this.AppBarActions,
+    this.appBarActions,
     this.floatingActionButton,
     this.isFullScreen = false,
   });
@@ -38,7 +39,7 @@ class DefaultLayout extends StatelessWidget {
       return null;
     } else {
       return AppBar(
-        actions: AppBarActions,
+        actions: appBarActions,
         backgroundColor: Colors.white,
         // 앞으로 튀어나온 효과
         elevation: 0,

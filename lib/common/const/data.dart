@@ -23,6 +23,19 @@ enum DiaryContentType {
   final String value;
   final String koreanValue;
   const DiaryContentType(this.value, this.koreanValue);
+
+  factory DiaryContentType.getByCode(String code) {
+    switch (code) {
+      case 'txt':
+        return DiaryContentType.txt;
+      case 'img':
+        return DiaryContentType.img;
+      case 'vid':
+        return DiaryContentType.vid;
+      default:
+        return DiaryContentType.txt;
+    }
+  }
 }
 
 enum DiaryCategory {
@@ -33,4 +46,19 @@ enum DiaryCategory {
   final String value;
   final String koreanValue;
   const DiaryCategory(this.value, this.koreanValue);
+
+  factory DiaryCategory.getByCode(String code) {
+    switch (code) {
+      case 'daily':
+        return DiaryCategory.daily;
+      case 'travel':
+        return DiaryCategory.travel;
+      case 'study':
+        return DiaryCategory.study;
+      default:
+        return DiaryCategory.daily;
+    }
+  }
 }
+
+const paginationDefaultFetcgCount = 10;
