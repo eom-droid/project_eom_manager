@@ -50,6 +50,14 @@ class DiaryStateNotifier extends PaginationProvider<DiaryModel, DiaryRepository,
 
     final pState = state as CursorPagination;
 
+    final selectedDiary =
+        pState.data.firstWhereOrNull((element) => element.id == id);
+
+    // 만약 데이터가 이미 캐시에 존재한다면 그냥 리턴
+    if (selectedDiary != null && selectedDiary is DiaryDetailModel) {
+      return;
+    }
+
     // 추후 데이터의 저장 형태에 따라서 다르게 처리할 예정
     final resp = await repository.getDiaryDetail(id: id);
 
@@ -85,11 +93,20 @@ class DiaryStateNotifier extends PaginationProvider<DiaryModel, DiaryRepository,
     required DiaryDetailModel diary,
     required List<MultipartFile> uploadFiles,
   }) async {
-    print(
-      await super.repository.addDiary(
-            diary: diary.toJson(),
-            file: uploadFiles,
-          ),
-    );
+    await super.repository.addDiary(
+          diary: diary.toJson(),
+          file: uploadFiles,
+        );
+  }
+
+  Future<void> updateDiary({
+    required DiaryDetailModel diary,
+    required List<MultipartFile> uploadFiles,
+  }) async {
+    await super.repository.updateDiary(
+          diary: diary.toJson(),
+          file: uploadFiles,
+          id: diary.id,
+        );
   }
 }

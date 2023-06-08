@@ -6,6 +6,7 @@ class DiaryCard extends StatelessWidget {
   final String? thumbnail;
   final List<String> hashtags;
   final String title;
+  final void Function(int)? onTrheeDotSelected;
 
   const DiaryCard({
     Key? key,
@@ -13,16 +14,19 @@ class DiaryCard extends StatelessWidget {
     this.thumbnail,
     required this.hashtags,
     required this.title,
+    required this.onTrheeDotSelected,
   }) : super(key: key);
 
   factory DiaryCard.fromModel({
     required DiaryModel model,
+    required void Function(int)? onTrheeDotSelected,
   }) {
     return DiaryCard(
       postDT: model.postDT,
       thumbnail: model.thumbnail,
       hashtags: model.hashtags,
       title: model.title,
+      onTrheeDotSelected: onTrheeDotSelected,
     );
   }
 
@@ -50,44 +54,41 @@ class DiaryCard extends StatelessWidget {
                   const PopupMenuItem<int>(value: 1, child: Text('수정')),
                   const PopupMenuItem<int>(value: 2, child: Text('삭제')),
                 ],
-                onSelected: (int value) {
-                  // if(value =)
-                  // setState(() { _value = value; });
-                },
+                onSelected: onTrheeDotSelected,
               )
             ],
           ),
         ),
-        SizedBox(
-          height: 300.0,
-          child: Stack(
-            children: [
-              Container(
-                color: Colors.grey,
-                width: double.infinity,
-                height: 300.0,
-                child: const Text('사진'),
-              ),
-              Positioned(
-                bottom: 20,
-                right: 0,
-                child: Container(
-                  color: Colors.cyan,
-                  child: Row(
-                    children: hashtags
-                        .map<Padding>(
-                          (String e) => Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Text(e),
-                          ),
-                        )
-                        .toList(),
-                  ),
+        if (thumbnail != null)
+          SizedBox(
+            height: 300.0,
+            child: Stack(
+              children: [
+                Image.network(
+                  thumbnail!,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
                 ),
-              )
-            ],
+                Positioned(
+                  bottom: 20,
+                  right: 0,
+                  child: Container(
+                    color: Colors.cyan,
+                    child: Row(
+                      children: hashtags
+                          .map<Padding>(
+                            (String e) => Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Text(e),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
-        ),
         Container(
           height: 50.0,
           color: Colors.greenAccent,

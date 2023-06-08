@@ -1,18 +1,21 @@
 import 'dart:convert';
 
 import 'package:manager/common/const/data.dart';
+import 'package:manager/common/const/setting.dart';
 
 class DataUtils {
   static String pathToUrl(String value) {
     // return 'https://s3.ap-northeast-2.amazonaws.com/taeho-diary/$value';
     // 추후 s3에 업로드할 예정
-    return value;
+    return defaultAWSS3Url + value;
   }
 
   static String? pathToUrlNullable(String? value) {
-    // return 'https://s3.ap-northeast-2.amazonaws.com/taeho-diary/$value';
-    // 추후 s3에 업로드할 예정
-    return value;
+    if (value != null) {
+      return defaultAWSS3Url + value;
+    } else {
+      return null;
+    }
   }
 
   static List<String> listPathsToUrls(List paths) {
@@ -57,5 +60,9 @@ class DataUtils {
 
   static String diaryCategoryToString(DiaryCategory value) {
     return value.value;
+  }
+
+  static String urlToPath(String value) {
+    return value.replaceAll(defaultAWSS3Url, '');
   }
 }

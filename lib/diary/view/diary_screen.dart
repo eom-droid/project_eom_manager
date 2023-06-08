@@ -5,6 +5,7 @@ import 'package:manager/common/components/pagination_list_view.dart';
 import 'package:manager/diary/components/diary_card.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
 import 'package:manager/diary/view/diary_detail_screen.dart';
+import 'package:manager/diary/view/diary_edit_screen.dart';
 
 class DiaryScreen extends ConsumerWidget {
   const DiaryScreen({super.key});
@@ -23,6 +24,14 @@ class DiaryScreen extends ConsumerWidget {
           },
           child: DiaryCard.fromModel(
             model: model,
+            onTrheeDotSelected: (int? value) {
+              if (value == 1) {
+                context.pushNamed(
+                  DiaryEditScreen.routeName,
+                  pathParameters: {'rid': model.id},
+                );
+              } else if (value == 2) {}
+            },
           ),
         );
       },

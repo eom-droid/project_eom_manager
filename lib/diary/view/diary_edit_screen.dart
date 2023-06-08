@@ -47,6 +47,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   final ScrollController scrollController = ScrollController();
 
   bool isLoading = false;
+  bool isInitialized = false;
 
   String title = '';
   DateTime postDT = DataUtils.dateOnly(DateTime.now());
@@ -55,27 +56,103 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   List<_ContentInput> contents = [];
   DiaryCategory category = DiaryCategory.daily;
   int thumbnailIndex = -1;
+  int postDateInd = -1;
+
   @override
   void initState() {
     super.initState();
 
-    title = '테스트 메시지';
-    weather = '맑음';
-    hashtags.addAll(['안녕', '이거는', '테스트']);
-    contents.add(
-      _ContentInput(
-        contentType: DiaryContentType.txt,
-        controller: TextEditingController(text: '테스트 메시지\n테스트 메시지'),
-      ),
-    );
+    // 추가인 경우는 getDetail이 필요없음
+    if (widget.id != NEW_ID) {
+      ref.read(diaryProvider.notifier).getDetail(id: widget.id);
+    }
+
+    // weather = '맑음';
+    // hashtags.addAll(['안녕', '이거는', '테스트']);
+    // contents.add(
+    //   _ContentInput(
+    //     contentType: DiaryContentType.txt,
+    //     controller: TextEditingController(text: '테스트 메시지\n테스트 메시지'),
+    //   ),
+    // );
+  }
+
+  void init() {
+    // 1. 초기화가 되었는지 확인
+    if (isInitialized) return;
+
+    // 2-1. 추가
+    if (widget.id == NEW_ID) {
+      isInitialized = true;
+      return;
+    }
+
+    // 2-2. 수정
+    final state = ref.watch(diaryDetailProvider(widget.id));
+    // state가 null이거나 DiaryModel이 아닌경우는 리턴
+    if (state is! DiaryDetailModel) {
+      return;
+    }
+
+    title = state.title;
+    postDT = state.postDT;
+    weather = state.weather;
+    hashtags = state.hashtags;
+    category = state.category;
+    postDateInd = state.postDateInd;
+
+    contents = state.contentOrder
+        .map<_ContentInput>(
+          (e) => _ContentInput(
+            contentType: e,
+            controller: TextEditingController(),
+          ),
+        )
+        .toList();
+    int txtIndex = 0;
+    int imgIndex = 0;
+    int vidIndex = 0;
+    for (int i = 0; i < contents.length; i++) {
+      switch (contents[i].contentType) {
+        case DiaryContentType.txt:
+          contents[i].controller.text = state.txts[txtIndex];
+          txtIndex++;
+          break;
+        case DiaryContentType.img:
+          contents[i].controller.text = state.imgs[imgIndex];
+          imgIndex++;
+          break;
+        case DiaryContentType.vid:
+          contents[i].controller.text = state.vids[vidIndex];
+          vidIndex++;
+          break;
+        default:
+          break;
+      }
+    }
+    thumbnailIndex = state.thumbnail == null
+        ? -1
+        : contents.indexWhere(
+            (element) => element.controller.text == state.thumbnail);
+    isInitialized = true;
   }
 
   @override
   Widget build(BuildContext context) {
+    init();
+
+    if (!isInitialized) {
+      return const DefaultLayout(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return LoadingLayout(
       isLoading: isLoading,
       childWidget: DefaultLayout(
-        title: 'Diary Add',
+        title: widget.id == NEW_ID ? 'Diary Add' : 'Diary Edit',
         isFullScreen: true,
         appBarActions: [
           IconButton(
@@ -113,7 +190,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
                   SchedulerBinding.instance.addPostFrameCallback(
                     (_) {
-                      print('scrollController.position.maxScrollExtent');
                       scrollController.animateTo(
                         scrollController.position.maxScrollExtent,
                         duration: const Duration(milliseconds: 100),
@@ -197,8 +273,16 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   Widget _renderThumbnail() {
     if (thumbnailIndex != -1 &&
         contents[thumbnailIndex].controller.text != '') {
-      return Image.file(
-        File(contents[thumbnailIndex].controller.text),
+      ImageProvider imageProvider;
+      if (contents[thumbnailIndex].controller.text.startsWith("http")) {
+        imageProvider = NetworkImage(contents[thumbnailIndex].controller.text);
+      } else {
+        imageProvider =
+            FileImage(File(contents[thumbnailIndex].controller.text));
+      }
+
+      return Image(
+        image: imageProvider,
         height: 300.0,
         width: double.infinity,
         fit: BoxFit.cover,
@@ -314,50 +398,73 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
       List<MultipartFile> uploadFiles = [];
 
+      // 비동기 가능할거같은데.....
       for (int i = 0; contents.length > i; i++) {
         if (contents[i].contentType == DiaryContentType.txt) {
           txts.add(contents[i].controller.text);
           contentOrder.add(DiaryContentType.txt);
         } else {
-          final String fileName = contents[i].controller.text.split('/').last;
-          uploadFiles.add(
-            await MultipartFile.fromFile(
-              contents[i].controller.text,
-              filename: fileName,
-            ),
-          );
-
-          if (contents[i].contentType == DiaryContentType.img) {
-            imgs.add(fileName);
-            contentOrder.add(DiaryContentType.img);
-          } else {
-            vids.add(fileName);
-            contentOrder.add(DiaryContentType.vid);
+          // 기존 이미지를 사용하는 경우
+          if (contents[i].controller.text.startsWith("http")) {
+            imgs.add(DataUtils.urlToPath(contents[i].controller.text));
           }
+          // 새로운 이미지를 사용하는 경우
+          else {
+            final String fileName = contents[i].controller.text.split('/').last;
+            uploadFiles.add(
+              await MultipartFile.fromFile(
+                contents[i].controller.text,
+                filename: fileName,
+              ),
+            );
+
+            imgs.add(fileName);
+          }
+
+          contentOrder.add(contents[i].contentType!);
         }
       }
 
-      ref.read(diaryProvider.notifier).addDiary(
-            diary: DiaryDetailModel(
-              id: NEW_ID,
-              title: title,
-              writer: '엄태호',
-              weather: weather,
-              hashtags: hashtags,
-              postDT: postDT,
-              thumbnail: thumbnailIndex == -1
-                  ? null
-                  : contents[thumbnailIndex].controller.text.split('/').last,
-              postDateInd: -1,
-              category: category,
-              isShown: true,
-              txts: txts,
-              imgs: imgs,
-              vids: vids,
-              contentOrder: contentOrder,
-            ),
-            uploadFiles: uploadFiles,
-          );
+      // 썸네일
+      String? thumbnail;
+      if (thumbnailIndex != -1) {
+        if (contents[thumbnailIndex].controller.text.startsWith("http")) {
+          thumbnail =
+              DataUtils.urlToPath(contents[thumbnailIndex].controller.text);
+        } else {
+          thumbnail = contents[thumbnailIndex].controller.text.split('/').last;
+        }
+      }
+
+      DiaryDetailModel diaryDetail = DiaryDetailModel(
+        id: widget.id,
+        title: title,
+        writer: "엄태호",
+        weather: weather,
+        hashtags: hashtags,
+        postDT: postDT,
+        postDateInd: postDateInd,
+        thumbnail: thumbnail,
+        category: category,
+        isShown: true,
+        txts: txts,
+        imgs: imgs,
+        vids: vids,
+        contentOrder: contentOrder,
+      );
+      print(diaryDetail.toJson());
+
+      if (widget.id == NEW_ID) {
+        ref.read(diaryProvider.notifier).addDiary(
+              diary: diaryDetail,
+              uploadFiles: uploadFiles,
+            );
+      } else {
+        ref.read(diaryProvider.notifier).updateDiary(
+              diary: diaryDetail,
+              uploadFiles: uploadFiles,
+            );
+      }
     }
 
     setState(() {
@@ -438,7 +545,7 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
         return DiaryImgInput(
           loadingTrigger: (error, value) {
             if (error != null) {
-              // 에러상태일때는 로딩 false 고정
+              // 에러상태일때는 로딩 여부 false 고정
               widget.onLoading(error, false);
             } else {
               widget.onLoading(null, value);

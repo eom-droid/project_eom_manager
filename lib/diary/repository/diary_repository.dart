@@ -53,4 +53,15 @@ abstract class DiaryRepository
     @Part(name: "diary") required Map<String, dynamic> diary,
     @Part(name: "file") required List<MultipartFile> file,
   });
+
+  @PATCH('/{id}')
+  @Headers({
+    'accessToken': 'true',
+  })
+  @MultiPart()
+  Future<dynamic> updateDiary({
+    @Path() required String id,
+    @Part(name: "diary") required Map<String, dynamic> diary,
+    @Part(name: "file") required List<MultipartFile> file,
+  });
 }

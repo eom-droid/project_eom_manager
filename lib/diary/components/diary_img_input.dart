@@ -33,6 +33,13 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
 
   Widget renderBody() {
     if (widget.controller.text != '') {
+      ImageProvider imageProvider;
+      if (widget.controller.text.startsWith("http")) {
+        imageProvider = NetworkImage(widget.controller.text);
+      } else {
+        imageProvider = FileImage(File(widget.controller.text));
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -40,8 +47,8 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
             // 사진이 불러와질때 순간적으로 0으로 사라지는 현상을 방지하기 위해 최소 높이를 지정
             // 추후 rivderpod 사용 시 문제점 해결 예정
             constraints: const BoxConstraints(minHeight: 300.0),
-            child: Image.file(
-              File(widget.controller.text),
+            child: Image(
+              image: imageProvider,
               fit: BoxFit.cover,
             ),
           ),
