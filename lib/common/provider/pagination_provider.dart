@@ -134,6 +134,7 @@ class PaginationProvider<
         }
         paginationParams = generateParams(null, fetchCount, fetchMore);
       }
+
       final resp = await repository.paginate(
         paginationParams: paginationParams,
       );

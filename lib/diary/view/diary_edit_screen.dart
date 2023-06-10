@@ -4,10 +4,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:manager/common/components/custom_animated_switch.dart';
 import 'package:manager/common/components/custom_text_form_field.dart';
 import 'package:manager/common/layout/loading_layout.dart';
+import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/components/diary_edit_detail_card.dart';
@@ -156,8 +158,11 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         isFullScreen: true,
         appBarActions: [
           IconButton(
-            onPressed: () {
-              onSavePressed();
+            onPressed: () async {
+              if (!isLoading) {
+                await onSavePressed();
+                context.pop<PopDataModel>(const PopDataModel(refetch: true));
+              }
             },
             icon: const Icon(Icons.save_as_outlined),
           ),
@@ -317,45 +322,32 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
               setState(() {
                 if (thumbnailIndex == index) {
                   thumbnailIndex = -1;
+                } else {
+                  if (thumbnailIndex > index) {
+                    thumbnailIndex--;
+                  }
                 }
                 contents.removeAt(index);
               });
             },
-            child: Column(
-              children: [
-                DiaryEditDetailCard(
-                  headerRightWidget:
-                      contents[index].contentType != DiaryContentType.txt
-                          ? Row(
-                              children: [
-                                const Text('썸네일 : '),
-                                const SizedBox(width: 8.0),
-                                CustomAnimatedSwitch(
-                                  value: thumbnailIndex == index,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      thumbnailIndex = value ? index : -1;
-                                    });
-                                  },
-                                )
-                              ],
-                            )
-                          : null,
-                  isThumbnail: thumbnailIndex == index,
-                  index: index,
-                  childWidget: _ContentInputWidget(
-                    contentInput: contents[index],
-                    onLoading: (String? error, bool value) {
-                      setState(() {
-                        isLoading = value;
-                      });
-                      if (error != null) {
-                        _showSnackBar(content: error);
-                      }
-                    },
-                  ),
-                ),
-              ],
+            child: _ContentInputWidget(
+              index: index,
+              isThumbnail: thumbnailIndex == index,
+              contentInput: contents[index],
+              onLoading: (error, value) {
+                if (error != null) {
+                  _showSnackBar(content: error);
+                } else {
+                  setState(() {
+                    isLoading = value;
+                  });
+                }
+              },
+              onThumbnailChanged: (int index, bool value) {
+                setState(() {
+                  thumbnailIndex = value ? index : -1;
+                });
+              },
             ),
           );
         },
@@ -383,11 +375,11 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     );
   }
 
-  void onSavePressed() async {
+  Future<void> onSavePressed() async {
+    isLoading = true;
+
     FocusScope.of(context).requestFocus(FocusNode());
-    setState(() {
-      isLoading = true;
-    });
+    setState(() {});
 
     if (validate()) {
       formKey.currentState!.save();
@@ -452,24 +444,23 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         vids: vids,
         contentOrder: contentOrder,
       );
-      print(diaryDetail.toJson());
 
       if (widget.id == NEW_ID) {
-        ref.read(diaryProvider.notifier).addDiary(
+        await ref.read(diaryProvider.notifier).addDiary(
               diary: diaryDetail,
               uploadFiles: uploadFiles,
             );
       } else {
-        ref.read(diaryProvider.notifier).updateDiary(
+        await ref.read(diaryProvider.notifier).updateDiary(
               diary: diaryDetail,
               uploadFiles: uploadFiles,
             );
       }
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    // setState(() {
+    //   isLoading = false;
+    // });
   }
 
   bool validate() {
@@ -523,10 +514,16 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
 class _ContentInputWidget extends StatefulWidget {
   final Function(String?, bool) onLoading;
+  final Function(int, bool) onThumbnailChanged;
   final _ContentInput contentInput;
+  final int index;
+  final bool isThumbnail;
   const _ContentInputWidget({
     required this.onLoading,
     required this.contentInput,
+    required this.index,
+    required this.isThumbnail,
+    required this.onThumbnailChanged,
   });
 
   @override
@@ -536,6 +533,44 @@ class _ContentInputWidget extends StatefulWidget {
 class __ContentInputWidgetState extends State<_ContentInputWidget> {
   @override
   Widget build(BuildContext context) {
+    return DiaryEditDetailCard(
+      borderColor: widget.isThumbnail ? PRIMARY_COLOR : null,
+      childWidget: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0, top: 12.0, bottom: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('#${widget.index + 1}'),
+                if (widget.contentInput.contentType == DiaryContentType.img ||
+                    widget.contentInput.contentType == DiaryContentType.vid)
+                  Row(
+                    children: [
+                      const Text('썸네일 : '),
+                      const SizedBox(width: 8.0),
+                      CustomAnimatedSwitch(
+                        value: widget.isThumbnail,
+                        onChanged: (bool value) {
+                          // setState(() {
+                          //   thumbnailIndex = value ? index : -1;
+                          // });
+                          widget.onThumbnailChanged(widget.index, value);
+                        },
+                      )
+                    ],
+                  )
+              ],
+            ),
+          ),
+          contentInputWidget(),
+        ],
+      ),
+    );
+  }
+
+  Widget contentInputWidget() {
     switch (widget.contentInput.contentType) {
       case DiaryContentType.txt:
         return DiaryTxtInput(

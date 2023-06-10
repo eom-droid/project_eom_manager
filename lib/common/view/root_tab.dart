@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:manager/common/const/colors.dart';
-import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/diary/view/diary_edit_screen.dart';
 import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/home/view/home_screen.dart';
 import 'package:manager/music/view/play_list_screen.dart';
@@ -18,7 +15,6 @@ class RootTab extends StatefulWidget {
 
 class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
   late TabController controller;
-  FloatingActionButton? floatingActionButton;
   int index = 0;
 
   @override
@@ -40,30 +36,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
 
   void tabListener() {
     // tab 변경 작업 중에도 한번 불리는데 무시하기
-    if (controller.indexIsChanging) {
-      return;
-    }
-    // 탭 변경 floating button 추가
-    switch (controller.index) {
-      case 0:
-        floatingActionButton = null;
-        break;
-      case 1 || 2:
-        floatingActionButton = FloatingActionButton(
-          onPressed: () {
-            if (controller.index == 1) {
-              context.pushNamed(
-                DiaryEditScreen.routeName,
-                pathParameters: {'rid': NEW_ID},
-              );
-            } else {
-              // context.pushNamed(DiaryAddScreen.routeName);
-            }
-          },
-          child: const Icon(Icons.add),
-        );
-        break;
-    }
+
     setState(() {
       index = controller.index;
     });
@@ -73,7 +46,6 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return DefaultLayout(
       title: 'Prj Eom',
-      floatingActionButton: floatingActionButton,
       bottomNavigationBar: BottomNavigationBar(
         // 선택 시 색상
         selectedItemColor: PRIMARY_COLOR,

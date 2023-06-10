@@ -7,6 +7,8 @@ class PaginationUtils {
     required ScrollController controller,
     required PaginationProvider provider,
   }) {
+    if (controller.position.maxScrollExtent == 0 ||
+        controller.position.maxScrollExtent <= GAP_WHEN_PAGINATE) return;
     if (controller.offset >
         controller.position.maxScrollExtent - GAP_WHEN_PAGINATE) {
       provider.paginate(
