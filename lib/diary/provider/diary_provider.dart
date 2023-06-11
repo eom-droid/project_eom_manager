@@ -109,4 +109,20 @@ class DiaryStateNotifier extends PaginationProvider<DiaryModel, DiaryRepository,
           id: diary.id,
         );
   }
+
+  Future<void> deleteDiary({
+    required String id,
+  }) async {
+    await super.repository.deleteDiary(id: id);
+
+    if (state is! CursorPagination) {
+      return;
+    }
+
+    final pState = state as CursorPagination;
+
+    state = pState.copyWith(
+      data: pState.data.where((element) => element.id != id).toList(),
+    );
+  }
 }

@@ -64,4 +64,13 @@ abstract class DiaryRepository
     @Part(name: "diary") required Map<String, dynamic> diary,
     @Part(name: "file") required List<MultipartFile> file,
   });
+
+  @DELETE('/{id}')
+  @Headers({
+    'accessToken': 'true',
+  })
+  @MultiPart()
+  Future<dynamic> deleteDiary({
+    @Path() required String id,
+  });
 }

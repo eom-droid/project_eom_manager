@@ -5,6 +5,7 @@ import 'package:manager/common/components/pagination_list_view.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/diary/components/diary_card.dart';
+import 'package:manager/diary/model/diary_model.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
 import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_edit_screen.dart';
@@ -16,9 +17,9 @@ class DiaryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
-        PaginationListView(
+        PaginationListView<DiaryModel>(
           provider: diaryProvider,
-          itemBuilder: <DiaryModel>(_, index, model) {
+          itemBuilder: <DiaryModel>(_, int index, model) {
             return InkWell(
               onTap: () async {
                 context.pushNamed(
@@ -36,7 +37,34 @@ class DiaryScreen extends ConsumerWidget {
                       routeName: DiaryEditScreen.routeName,
                       snackBarText: 'Diary updated!',
                     );
-                  } else if (value == 2) {}
+                  } else if (value == 2) {
+                    showPopUp(
+                      context: context,
+                      onConfirm: () async {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return const AlertDialog(
+                              title: Text('삭제중입니다.'),
+                              content: LinearProgressIndicator(),
+                            );
+                          },
+                        );
+                        await ref
+                            .read(diaryProvider.notifier)
+                            .deleteDiary(id: model.id);
+
+                        // 위에서 다이얼로그를 하나 더 열기때문에
+                        // pop을 하나더 진행함
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      onCancel: () {
+                        Navigator.of(context).pop();
+                      },
+                    );
+                  }
                 },
               ),
             );
@@ -58,6 +86,34 @@ class DiaryScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  showPopUp({
+    required BuildContext context,
+    required VoidCallback onConfirm,
+    required VoidCallback onCancel,
+  }) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('삭제하시겠습니까?'),
+          // 컨텐츠 영역
+          // content: ,
+          actions: <Widget>[
+            TextButton(
+              onPressed: onConfirm,
+              child: const Text('넵'),
+            ),
+            TextButton(
+              onPressed: onCancel,
+              child: const Text('아뇨'),
+            ),
+          ],
+        );
+      },
     );
   }
 
