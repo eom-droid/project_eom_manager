@@ -8,7 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:manager/common/components/custom_animated_switch.dart';
 import 'package:manager/common/components/custom_text_form_field.dart';
-import 'package:manager/common/layout/loading_layout.dart';
+import 'package:manager/common/components/custom_video_player.dart';
+import 'package:manager/common/components/full_loading_screen.dart';
 import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 import 'package:manager/common/utils/data_utils.dart';
@@ -21,10 +22,12 @@ import 'package:manager/diary/components/diary_txt_input.dart';
 import 'package:manager/diary/components/diary_vid_input.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
+import 'package:video_player/video_player.dart';
 
-class _ContentInput {
+class _ContentInput<T extends ValueNotifier> {
   DiaryContentType? contentType;
-  TextEditingController controller;
+  T? controller;
+
   _ContentInput({
     required this.contentType,
     required this.controller,
@@ -48,7 +51,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   final ScrollController scrollController = ScrollController();
 
-  bool isLoading = false;
+  bool isSaving = false;
   bool isInitialized = false;
 
   String title = '';
@@ -68,18 +71,9 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     if (widget.id != NEW_ID) {
       ref.read(diaryProvider.notifier).getDetail(id: widget.id);
     }
-
-    // weather = '맑음';
-    // hashtags.addAll(['안녕', '이거는', '테스트']);
-    // contents.add(
-    //   _ContentInput(
-    //     contentType: DiaryContentType.txt,
-    //     controller: TextEditingController(text: '테스트 메시지\n테스트 메시지'),
-    //   ),
-    // );
   }
 
-  void init() {
+  Future<void> init() async {
     // 1. 초기화가 되었는지 확인
     if (isInitialized) return;
 
@@ -107,7 +101,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         .map<_ContentInput>(
           (e) => _ContentInput(
             contentType: e,
-            controller: TextEditingController(),
+            controller: null,
           ),
         )
         .toList();
@@ -117,15 +111,24 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     for (int i = 0; i < contents.length; i++) {
       switch (contents[i].contentType) {
         case DiaryContentType.txt:
-          contents[i].controller.text = state.txts[txtIndex];
+          contents[i].controller = TextEditingController();
+          var controller = contents[i].controller as TextEditingController;
+          controller.text = state.txts[txtIndex];
           txtIndex++;
           break;
         case DiaryContentType.img:
-          contents[i].controller.text = state.imgs[imgIndex];
+          contents[i].controller = TextEditingController();
+          var controller = contents[i].controller as TextEditingController;
+          controller.text = state.imgs[imgIndex];
           imgIndex++;
           break;
         case DiaryContentType.vid:
-          contents[i].controller.text = state.vids[vidIndex];
+          contents[i].controller =
+              VideoPlayerController.network(state.vids[vidIndex]);
+          var controller = contents[i].controller as VideoPlayerController;
+
+          await controller.initialize();
+
           vidIndex++;
           break;
         default:
@@ -134,13 +137,28 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     }
     thumbnailIndex = state.thumbnail == null
         ? -1
-        : contents.indexWhere(
-            (element) => element.controller.text == state.thumbnail);
-    isInitialized = true;
+        : contents.indexWhere((element) {
+            if (element.controller is TextEditingController) {
+              var controller = element.controller as TextEditingController;
+              return controller.text == state.thumbnail;
+            } else {
+              // 이부분은 조금있다가 확인해봐야됨
+              // 업로드까지 진행해보고 썸네일에서 잘 나오는지
+              var controller = element.controller as VideoPlayerController;
+              return controller.dataSource == state.thumbnail;
+            }
+          });
+    setState(() {
+      isInitialized = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // init을 initState가 아닌 build에 둔이유
+    // initState안에서 ref.read를 사용하여 Detail정보를 가지고오는거는 비동기
+    // 비동기라서 getDetail이 완료되었는지 확인하는 방법은 build가 다시 불려졌을때임
+    // 따라서 여기에 두어서 build가 다시 불려졌을때 getDetail이 완료되었는지 확인 및 초기화를 진행함
     init();
 
     if (!isInitialized) {
@@ -151,64 +169,60 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       );
     }
 
-    return LoadingLayout(
-      isLoading: isLoading,
-      childWidget: DefaultLayout(
-        title: widget.id == NEW_ID ? 'Diary Add' : 'Diary Edit',
-        isFullScreen: true,
-        appBarActions: [
-          IconButton(
-            onPressed: () async {
-              if (!isLoading) {
-                await onSavePressed();
-                context.pop<PopDataModel>(const PopDataModel(refetch: true));
-              }
-            },
-            icon: const Icon(Icons.save_as_outlined),
-          ),
-        ],
-        child: SafeArea(
-          top: false,
-          child: CustomScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            controller: scrollController,
-            slivers: [
-              _renderDiaryBasicInfo(),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 16.0),
-              ),
-              _renderContents(contents: contents),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 16.0),
-              ),
-              _renderContentAddButton(
-                onPressed: () {
-                  setState(
-                    () {
-                      contents.add(
-                        _ContentInput(
-                            contentType: null,
-                            controller: TextEditingController()),
-                      );
-                    },
+    return DefaultLayout(
+      title: widget.id == NEW_ID ? 'Diary Add' : 'Diary Edit',
+      isFullScreen: true,
+      appBarActions: [
+        IconButton(
+          onPressed: () async {
+            if (!isSaving) {
+              await onSavePressed();
+              context.pop<PopDataModel>(const PopDataModel(refetch: true));
+            }
+          },
+          icon: const Icon(Icons.save_as_outlined),
+        ),
+      ],
+      child: SafeArea(
+        top: false,
+        child: CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          controller: scrollController,
+          slivers: [
+            _renderDiaryBasicInfo(),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16.0),
+            ),
+            _renderContents(contents: contents),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16.0),
+            ),
+            _renderContentAddButton(
+              onPressed: () {
+                setState(() {
+                  contents.add(
+                    _ContentInput(
+                      contentType: null,
+                      controller: null,
+                    ),
                   );
+                });
 
-                  SchedulerBinding.instance.addPostFrameCallback(
-                    (_) {
-                      scrollController.animateTo(
-                        scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 100),
-                        curve: Curves.fastOutSlowIn,
-                      );
-                    },
-                  );
-                },
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 16.0),
-              ),
-            ],
-          ),
+                SchedulerBinding.instance.addPostFrameCallback(
+                  (_) {
+                    scrollController.animateTo(
+                      scrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.fastOutSlowIn,
+                    );
+                  },
+                );
+              },
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16.0),
+            ),
+          ],
         ),
       ),
     );
@@ -276,31 +290,40 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   }
 
   Widget _renderThumbnail() {
-    if (thumbnailIndex != -1 &&
-        contents[thumbnailIndex].controller.text != '') {
-      ImageProvider imageProvider;
-      if (contents[thumbnailIndex].controller.text.startsWith("http")) {
-        imageProvider = NetworkImage(contents[thumbnailIndex].controller.text);
-      } else {
-        imageProvider =
-            FileImage(File(contents[thumbnailIndex].controller.text));
-      }
+    // 썸네일이 없다면
+    if (thumbnailIndex != -1) {
+      // 썸네일이 컨트롤러가 null이 아니라면
+      if (contents[thumbnailIndex].controller != null) {
+        var controller = contents[thumbnailIndex].controller;
+        // 썸네일이 사진이라면
+        if (controller is TextEditingController) {
+          ImageProvider imageProvider;
+          if (controller.text.startsWith("http")) {
+            imageProvider = NetworkImage(controller.text);
+          } else {
+            imageProvider = FileImage(File(controller.text));
+          }
 
-      return Image(
-        image: imageProvider,
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      return Container(
-        height: 300.0,
-        color: Colors.grey[300],
-        child: const Center(
-          child: Text('썸네일을 선택해 주세요'),
-        ),
-      );
+          return Image(
+            image: imageProvider,
+            height: 300.0,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          );
+        } else if (controller is VideoPlayerController) {
+          return CustomVideoPlayer(
+            videoController: controller,
+          );
+        }
+      }
     }
+    return Container(
+      height: 300.0,
+      color: Colors.grey[300],
+      child: const Center(
+        child: Text('썸네일을 선택해 주세요'),
+      ),
+    );
   }
 
   SliverPadding _renderContents({
@@ -334,15 +357,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
               index: index,
               isThumbnail: thumbnailIndex == index,
               contentInput: contents[index],
-              onLoading: (error, value) {
-                if (error != null) {
-                  _showSnackBar(content: error);
-                } else {
-                  setState(() {
-                    isLoading = value;
-                  });
-                }
-              },
               onThumbnailChanged: (int index, bool value) {
                 setState(() {
                   thumbnailIndex = value ? index : -1;
@@ -376,10 +390,10 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   }
 
   Future<void> onSavePressed() async {
-    isLoading = true;
+    isSaving = true;
 
     FocusScope.of(context).requestFocus(FocusNode());
-    setState(() {});
+    FullLoadingScreen(context).startLoading();
 
     if (validate()) {
       formKey.currentState!.save();
@@ -393,24 +407,49 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       // 비동기 가능할거같은데.....
       for (int i = 0; contents.length > i; i++) {
         if (contents[i].contentType == DiaryContentType.txt) {
-          txts.add(contents[i].controller.text);
+          var controller = contents[i].controller as TextEditingController;
+          txts.add(controller.text);
           contentOrder.add(DiaryContentType.txt);
-        } else {
+        } else if (contents[i].contentType == DiaryContentType.img) {
+          var controller = contents[i].controller as TextEditingController;
           // 기존 이미지를 사용하는 경우
-          if (contents[i].controller.text.startsWith("http")) {
-            imgs.add(DataUtils.urlToPath(contents[i].controller.text));
+          if (controller.text.startsWith("http")) {
+            imgs.add(DataUtils.urlToPath(controller.text));
           }
           // 새로운 이미지를 사용하는 경우
           else {
-            final String fileName = contents[i].controller.text.split('/').last;
+            final String fileName = controller.text.split('/').last;
             uploadFiles.add(
               await MultipartFile.fromFile(
-                contents[i].controller.text,
+                controller.text,
                 filename: fileName,
               ),
             );
 
             imgs.add(fileName);
+          }
+
+          contentOrder.add(contents[i].contentType!);
+        } else if (contents[i].contentType == DiaryContentType.vid) {
+          var controller = contents[i].controller as VideoPlayerController;
+
+          // 기존 비디오를 사용하는 경우
+          if (controller.dataSource.startsWith("http")) {
+            vids.add(DataUtils.urlToPath(controller.dataSource));
+          }
+          // // 새로운 비디오를 사용하는 경우
+          else {
+            final String filePath =
+                controller.dataSource.replaceAll('file://', '');
+            final String fileName = controller.dataSource.split('/').last;
+            uploadFiles.add(
+              await MultipartFile.fromFile(
+                filePath,
+                filename: fileName,
+              ),
+            );
+
+            vids.add(fileName);
           }
 
           contentOrder.add(contents[i].contentType!);
@@ -420,11 +459,23 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       // 썸네일
       String? thumbnail;
       if (thumbnailIndex != -1) {
-        if (contents[thumbnailIndex].controller.text.startsWith("http")) {
-          thumbnail =
-              DataUtils.urlToPath(contents[thumbnailIndex].controller.text);
-        } else {
-          thumbnail = contents[thumbnailIndex].controller.text.split('/').last;
+        if (contents[thumbnailIndex].controller is TextEditingController) {
+          var controller =
+              contents[thumbnailIndex].controller as TextEditingController;
+          if (controller.text.startsWith("http")) {
+            thumbnail = DataUtils.urlToPath(controller.text);
+          } else {
+            thumbnail = controller.text.split('/').last;
+          }
+        } else if (contents[thumbnailIndex].controller
+            is VideoPlayerController) {
+          var controller =
+              contents[thumbnailIndex].controller as VideoPlayerController;
+          if (controller.dataSource.startsWith("http")) {
+            thumbnail = DataUtils.urlToPath(controller.dataSource);
+          } else {
+            thumbnail = controller.dataSource.split('/').last;
+          }
         }
       }
 
@@ -457,10 +508,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
             );
       }
     }
-
-    // setState(() {
-    //   isLoading = false;
-    // });
+    FullLoadingScreen(context).stopLoading();
   }
 
   bool validate() {
@@ -485,7 +533,14 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         _showSnackBar(content: '${i + 1}번쨰 컨텐츠 형태를 선택해주세요');
         return false;
       }
-      if (contents[i].controller.text == '') {
+      var controller = contents[i].controller;
+      // 컨텐츠로서 비디오를 선택하고 비디오를 넣지 않은 경우
+      if (controller == null) {
+        _showSnackBar(content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요');
+        return false;
+      }
+      // 컨텐츠로서 이미지를 선택하고 이미지를 넣지 않은 경우
+      if (controller is TextEditingController && controller.text == '') {
         _showSnackBar(content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요');
         return false;
       }
@@ -513,13 +568,11 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 }
 
 class _ContentInputWidget extends StatefulWidget {
-  final Function(String?, bool) onLoading;
   final Function(int, bool) onThumbnailChanged;
   final _ContentInput contentInput;
   final int index;
   final bool isThumbnail;
   const _ContentInputWidget({
-    required this.onLoading,
     required this.contentInput,
     required this.index,
     required this.isThumbnail,
@@ -573,34 +626,38 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
   Widget contentInputWidget() {
     switch (widget.contentInput.contentType) {
       case DiaryContentType.txt:
+        widget.contentInput.controller ??= TextEditingController();
         return DiaryTxtInput(
-          controller: widget.contentInput.controller,
+          controller: widget.contentInput.controller as TextEditingController,
         );
       case DiaryContentType.img:
+        widget.contentInput.controller ??= TextEditingController();
         return DiaryImgInput(
-          loadingTrigger: (error, value) {
-            if (error != null) {
-              // 에러상태일때는 로딩 여부 false 고정
-              widget.onLoading(error, false);
-            } else {
-              widget.onLoading(null, value);
-            }
-          },
-          controller: widget.contentInput.controller,
+          controller: widget.contentInput.controller as TextEditingController,
         );
       case DiaryContentType.vid:
-        return const DiaryVidInput();
+        return DiaryVidInput(
+          initVideoController:
+              widget.contentInput.controller as VideoPlayerController?,
+          onVideoControllerChanged: (VideoPlayerController value) {
+            widget.contentInput.controller = value;
+          },
+        );
       default:
-        return renderDefaultContentInput(callback: (DiaryContentType value) {
-          setState(() {
-            widget.contentInput.contentType = value;
-          });
-        });
+        return renderDefaultContentInput(
+          contentTypeSelected: (DiaryContentType value) {
+            setState(
+              () {
+                widget.contentInput.contentType = value;
+              },
+            );
+          },
+        );
     }
   }
 
   Widget renderDefaultContentInput({
-    required Function(DiaryContentType) callback,
+    required Function(DiaryContentType) contentTypeSelected,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -613,19 +670,8 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
             children: DiaryContentType.values
                 .map<OutlinedButton>(
                   (DiaryContentType e) => OutlinedButton(
-                    style: e != DiaryContentType.vid
-                        ? customOutlinedButtonStyle
-                        : customOutlinedButtonStyle.copyWith(
-                            foregroundColor:
-                                MaterialStateProperty.all(BODY_TEXT_COLOR),
-                            side: MaterialStateProperty.all(
-                              const BorderSide(
-                                color: BODY_TEXT_COLOR,
-                              ),
-                            ),
-                          ),
-                    onPressed:
-                        e != DiaryContentType.vid ? () => callback(e) : null,
+                    style: customOutlinedButtonStyle,
+                    onPressed: () => contentTypeSelected(e),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 12.0),

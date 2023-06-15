@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:manager/common/components/thumbnail_video_player.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
-import 'package:manager/common/layout/loading_layout.dart';
 import 'package:manager/common/layout/default_layout.dart';
+import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
@@ -26,8 +27,6 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   final ScrollController scrollController = ScrollController();
 
-  bool isLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -46,19 +45,16 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
       );
     }
 
-    return LoadingLayout(
-      isLoading: isLoading,
-      childWidget: Scaffold(
-        body: SafeArea(
-          top: false,
-          child: CustomScrollView(
-            slivers: [
-              _renderThumbnail(model: state),
-              _renderBasicInfo(model: state),
-              // skeleton screen add here
-              if (state is DiaryDetailModel) _renderContent(model: state),
-            ],
-          ),
+    return Scaffold(
+      body: SafeArea(
+        top: false,
+        child: CustomScrollView(
+          slivers: [
+            _renderThumbnail(model: state),
+            _renderBasicInfo(model: state),
+            // skeleton screen add here
+            if (state is DiaryDetailModel) _renderContent(model: state),
+          ],
         ),
       ),
     );
@@ -78,11 +74,20 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
         background: Stack(
           children: [
             if (model.thumbnail != null)
-              Image.network(
-                model.thumbnail!,
-                fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width,
-                height: imageHeight,
+              if (DataUtils.isImgFile(model.thumbnail!))
+                Center(
+                  child: Image.network(
+                    model.thumbnail!,
+                    fit: BoxFit.cover,
+                    width: MediaQuery.of(context).size.width,
+                    height: imageHeight,
+                  ),
+                ),
+            if (DataUtils.isVidFile(model.thumbnail!))
+              Center(
+                child: ThumbnailVideoPalyer(
+                  thumbnail: model.thumbnail!,
+                ),
               ),
             if (model.thumbnail == null)
               Container(

@@ -1,19 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:manager/common/components/full_loading_screen.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 
 class DiaryImgInput extends StatefulWidget {
-  final Function(String?, bool) loadingTrigger;
   final TextEditingController controller;
 
   const DiaryImgInput({
     Key? key,
     required this.controller,
-    required this.loadingTrigger,
   }) : super(key: key);
 
   @override
@@ -25,6 +23,7 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
 
   @override
   Widget build(BuildContext context) {
+    print('build');
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: renderBody(),
@@ -86,8 +85,8 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
 
   // 비동기 처리를 통해 갤러리에서 이미지의 경로를 가져온다.
   getImagePath(ImageSource imageSource) async {
-    String? error;
-    widget.loadingTrigger(null, true);
+    FullLoadingScreen(context).startLoading();
+
     try {
       final image = await picker.pickImage(
         source: imageSource,
@@ -96,24 +95,25 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
         imageQuality: 85,
         // 현재로서 제일 적당한 사이즈로서 보임
         // 5mb를 넘지 않으며, 깨짐 정도도 적당함
-        maxHeight: 1080,
-        maxWidth: 1080,
+        maxHeight: 850,
+        maxWidth: 850,
       );
       if (image != null) {
+        // print("${((await image.length()) / 1024 / 1024).toStringAsFixed(2)}MB");
         // 하단 loadingTrigger 실행 시 setState가 실행됨에 따라
         // 따로 setState를 진행하지 않음
         widget.controller.text = image.path;
+        setState(() {});
       }
     } catch (e) {
       // 1. not supported image file(ex : heic)
-      if (e is PlatformException) {
-        error = '지원하지 않는 이미지 파일입니다.';
-      } else {
-        error = '예기치 못한 오류가 발생했습니다.';
-        print(e);
-      }
-      widget.controller.text = '';
+      // if (e is PlatformException) {
+      //   error = '지원하지 않는 이미지 파일입니다.';
+      // } else {
+      //   error = '예기치 못한 오류가 발생했습니다.';
+      //   print(e);
+      // }
     }
-    widget.loadingTrigger(error, false);
+    FullLoadingScreen(context).stopLoading();
   }
 }

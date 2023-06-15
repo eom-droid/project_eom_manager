@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:manager/common/components/thumbnail_video_player.dart';
+import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/model/diary_model.dart';
 
 class DiaryCard extends StatelessWidget {
@@ -64,11 +66,16 @@ class DiaryCard extends StatelessWidget {
             height: 300.0,
             child: Stack(
               children: [
-                Image.network(
-                  thumbnail!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
+                if (DataUtils.isImgFile(thumbnail!))
+                  Image.network(
+                    thumbnail!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                if (DataUtils.isVidFile(thumbnail!))
+                  ThumbnailVideoPalyer(
+                    thumbnail: thumbnail!,
+                  ),
                 Positioned(
                   bottom: 20,
                   right: 0,

@@ -65,4 +65,38 @@ class DataUtils {
   static String urlToPath(String value) {
     return value.replaceAll(defaultAWSS3Url, '');
   }
+
+  static bool isImgFile(String filePath) {
+    final imageFileExtension = [
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "bmp",
+      "JPG",
+      "JPEG",
+      "PNG",
+      "GIF",
+      "BMP",
+    ];
+
+    final fileExtension = filePath.split('.').last;
+    return imageFileExtension.contains(fileExtension);
+  }
+
+  static bool isVidFile(String filePath) {
+    final videoFileExtension = [
+      "mp4",
+      "MP4",
+      "avi",
+      "AVI",
+      "wmv",
+      "WMV",
+      "mov",
+      "MOV",
+    ];
+
+    final fileExtension = filePath.split('.').last;
+    return videoFileExtension.contains(fileExtension);
+  }
 }

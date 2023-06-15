@@ -36,6 +36,7 @@ class DiaryScreen extends ConsumerWidget {
                       context: context,
                       routeName: DiaryEditScreen.routeName,
                       snackBarText: 'Diary updated!',
+                      id: model.id,
                     );
                   } else if (value == 2) {
                     showPopUp(
@@ -122,16 +123,17 @@ class DiaryScreen extends ConsumerWidget {
     required BuildContext context,
     required String routeName,
     required String snackBarText,
+    String? id,
   }) async {
     final popData = await context.pushNamed<PopDataModel>(
       DiaryEditScreen.routeName,
-      pathParameters: {'rid': NEW_ID},
+      pathParameters: {'rid': id ?? NEW_ID},
     );
     if (popData != null && popData.refetch == true) {
       ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Diary added!'),
+        SnackBar(
+          content: Text(snackBarText),
         ),
       );
     }
