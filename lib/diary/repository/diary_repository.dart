@@ -69,7 +69,6 @@ abstract class DiaryRepository
   @Headers({
     'accessToken': 'true',
   })
-  @MultiPart()
   Future<dynamic> deleteDiary({
     @Path() required String id,
   });

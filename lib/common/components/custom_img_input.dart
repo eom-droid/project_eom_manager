@@ -6,24 +6,34 @@ import 'package:manager/common/const/colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 
-class DiaryImgInput extends StatefulWidget {
-  final TextEditingController controller;
+class CustomImgInput extends StatefulWidget {
+  final String imgPath;
+  final Function(String) onChanged;
+  final double maxheightWidth;
 
-  const DiaryImgInput({
+  const CustomImgInput({
     Key? key,
-    required this.controller,
+    required this.imgPath,
+    required this.onChanged,
+    this.maxheightWidth = 850,
   }) : super(key: key);
 
   @override
-  State<DiaryImgInput> createState() => _DiaryImgInputState();
+  State<CustomImgInput> createState() => _CustomImgInputState();
 }
 
-class _DiaryImgInputState extends State<DiaryImgInput> {
+class _CustomImgInputState extends State<CustomImgInput> {
+  String imgPath = '';
   final picker = ImagePicker();
 
   @override
+  void initState() {
+    super.initState();
+    imgPath = widget.imgPath;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print('build');
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: renderBody(),
@@ -31,12 +41,12 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
   }
 
   Widget renderBody() {
-    if (widget.controller.text != '') {
+    if (imgPath != '') {
       ImageProvider imageProvider;
-      if (widget.controller.text.startsWith("http")) {
-        imageProvider = NetworkImage(widget.controller.text);
+      if (imgPath.startsWith("http")) {
+        imageProvider = NetworkImage(imgPath);
       } else {
-        imageProvider = FileImage(File(widget.controller.text));
+        imageProvider = FileImage(File(imgPath));
       }
 
       return Column(
@@ -95,15 +105,17 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
         imageQuality: 85,
         // 현재로서 제일 적당한 사이즈로서 보임
         // 5mb를 넘지 않으며, 깨짐 정도도 적당함
-        maxHeight: 850,
-        maxWidth: 850,
+        maxHeight: widget.maxheightWidth,
+        maxWidth: widget.maxheightWidth,
       );
       if (image != null) {
         // print("${((await image.length()) / 1024 / 1024).toStringAsFixed(2)}MB");
         // 하단 loadingTrigger 실행 시 setState가 실행됨에 따라
         // 따로 setState를 진행하지 않음
-        widget.controller.text = image.path;
-        setState(() {});
+        setState(() {
+          imgPath = image.path;
+          widget.onChanged(image.path);
+        });
       }
     } catch (e) {
       // 1. not supported image file(ex : heic)
@@ -113,6 +125,7 @@ class _DiaryImgInputState extends State<DiaryImgInput> {
       //   error = '예기치 못한 오류가 발생했습니다.';
       //   print(e);
       // }
+      print(e);
     }
     FullLoadingScreen(context).stopLoading();
   }

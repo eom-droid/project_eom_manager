@@ -3,7 +3,7 @@ import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/layout/default_layout.dart';
 import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/home/view/home_screen.dart';
-import 'package:manager/music/view/play_list_screen.dart';
+import 'package:manager/music/view/music_screen.dart';
 
 class RootTab extends StatefulWidget {
   static String get routeName => 'home';
@@ -84,7 +84,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
           children: const [
             HomeScreen(),
             DiaryScreen(),
-            PlayListScreen(),
+            MusicScreen(),
           ],
         ),
       ),

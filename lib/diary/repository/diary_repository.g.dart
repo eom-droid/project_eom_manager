@@ -148,7 +148,6 @@ class _DiaryRepository implements DiaryRepository {
       method: 'DELETE',
       headers: _headers,
       extra: _extra,
-      contentType: 'multipart/form-data',
     )
         .compose(
           _dio.options,

@@ -4,7 +4,7 @@ import 'package:manager/common/const/colors.dart';
 class CustomTextFormField extends StatelessWidget {
   final String label;
   final String? initialValue;
-  final FormFieldSetter<String> onSaved;
+  final FormFieldSetter<String>? onSaved;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
   final String? hintText;
@@ -15,7 +15,7 @@ class CustomTextFormField extends StatelessWidget {
     super.key,
     required this.label,
     this.initialValue,
-    required this.onSaved,
+    this.onSaved,
     this.onTap,
     this.onChanged,
     this.hintText,

@@ -13,11 +13,12 @@ import 'package:manager/common/components/full_loading_screen.dart';
 import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 import 'package:manager/common/utils/data_utils.dart';
+import 'package:manager/common/utils/flutter_utils.dart';
 import 'package:manager/diary/components/diary_edit_detail_card.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/diary/components/diary_img_input.dart';
+import 'package:manager/common/components/custom_img_input.dart';
 import 'package:manager/diary/components/diary_txt_input.dart';
 import 'package:manager/diary/components/diary_vid_input.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
@@ -176,8 +177,9 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         IconButton(
           onPressed: () async {
             if (!isSaving) {
-              await onSavePressed();
-              context.pop<PopDataModel>(const PopDataModel(refetch: true));
+              if (await onSavePressed()) {
+                context.pop<PopDataModel>(const PopDataModel(refetch: true));
+              }
             }
           },
           icon: const Icon(Icons.save_as_outlined),
@@ -389,13 +391,13 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     );
   }
 
-  Future<void> onSavePressed() async {
+  Future<bool> onSavePressed() async {
     isSaving = true;
 
     FocusScope.of(context).requestFocus(FocusNode());
     FullLoadingScreen(context).startLoading();
-
-    if (validate()) {
+    bool validateResult = validate();
+    if (validateResult) {
       formKey.currentState!.save();
       final List<String> txts = [];
       final List<String> imgs = [];
@@ -509,53 +511,65 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       }
     }
     FullLoadingScreen(context).stopLoading();
+    isSaving = false;
+    return validateResult;
   }
 
   bool validate() {
     if (formKey.currentContext == null) {
-      _showSnackBar(content: 'formKey가 없습니다');
+      FlutterUtils.showSnackBar(
+        context: context,
+        content: 'formKey가 없습니다',
+      );
       return false;
     }
 
     // form 내 모든 필드의 validate를 실행
     if (!formKey.currentState!.validate()) {
-      _showSnackBar(content: '기본 정보를 입력해주세요');
+      FlutterUtils.showSnackBar(
+        context: context,
+        content: '기본 정보를 입력해주세요',
+      );
 
       return false;
     }
 
     if (contents.isEmpty) {
-      _showSnackBar(content: '컨텐츠를 한개이상 넣어주세요');
+      FlutterUtils.showSnackBar(
+        context: context,
+        content: '컨텐츠를 하나이상 넣어주세요',
+      );
       return false;
     }
     for (int i = 0; i < contents.length; i++) {
       if (contents[i].contentType == null) {
-        _showSnackBar(content: '${i + 1}번쨰 컨텐츠 형태를 선택해주세요');
+        FlutterUtils.showSnackBar(
+          context: context,
+          content: '${i + 1}번쨰 번쨰 컨텐츠 형태를 선택해주세요',
+        );
         return false;
       }
       var controller = contents[i].controller;
       // 컨텐츠로서 비디오를 선택하고 비디오를 넣지 않은 경우
       if (controller == null) {
-        _showSnackBar(content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요');
+        FlutterUtils.showSnackBar(
+          context: context,
+          content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요',
+        );
+
         return false;
       }
       // 컨텐츠로서 이미지를 선택하고 이미지를 넣지 않은 경우
       if (controller is TextEditingController && controller.text == '') {
-        _showSnackBar(content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요');
+        FlutterUtils.showSnackBar(
+          context: context,
+          content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요',
+        );
+
         return false;
       }
     }
     return true;
-  }
-
-  void _showSnackBar({
-    required String content,
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(content),
-      ),
-    );
   }
 
   onTitleSaved(String? val) {
@@ -632,8 +646,13 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
         );
       case DiaryContentType.img:
         widget.contentInput.controller ??= TextEditingController();
-        return DiaryImgInput(
-          controller: widget.contentInput.controller as TextEditingController,
+        var controller =
+            widget.contentInput.controller as TextEditingController;
+        return CustomImgInput(
+          imgPath: controller.text,
+          onChanged: (String value) {
+            controller.text = value;
+          },
         );
       case DiaryContentType.vid:
         return DiaryVidInput(
