@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
@@ -5,6 +6,27 @@ import 'package:manager/common/model/pagination_params.dart';
 import 'package:manager/common/provider/pagination_provider.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/repository/music_repository.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+
+final musicYoutubeProvider = Provider.family<YoutubePlayerController, String>(
+  (ref, arg) {
+    return YoutubePlayerController(
+      params: const YoutubePlayerParams(
+        showFullscreenButton: true,
+      ),
+    )..cueVideoById(videoId: arg);
+  },
+);
+
+final musicDetailProvider = Provider.family<MusicModel?, String>((ref, id) {
+  final state = ref.watch(musicProvider);
+
+  if (state is! CursorPagination) {
+    return null;
+  }
+
+  return state.data.firstWhereOrNull((element) => element.id == id);
+});
 
 final musicProvider =
     StateNotifierProvider<MusicStateNotifier, CursorPaginationBase>((ref) {

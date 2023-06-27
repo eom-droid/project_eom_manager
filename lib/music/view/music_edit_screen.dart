@@ -13,7 +13,7 @@ import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/utils/flutter_utils.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/provider/music_provider.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class MusicEditScreen extends ConsumerStatefulWidget {
   static String get routeName => 'musicEdit';
@@ -56,34 +56,12 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       review.text = model.review;
       youtubeLink.text = model.youtubeLink;
       if (youtubeLink.text != '') {
-        _controller = YoutubePlayerController(
-          initialVideoId: youtubeLink.text,
-          flags: const YoutubePlayerFlags(
-            autoPlay: true,
-            mute: true,
-          ),
+        _controller = YoutubePlayerController.fromVideoId(
+          videoId: youtubeLink.text,
+          autoPlay: true,
         );
       }
     }
-
-    // _controller.addListener(() {
-    //   // if (isFullScreen != _controller.value.isFullScreen) {
-
-    //   //   isFullScreen = _controller.value.isFullScreen;
-
-    //   //   if (!isFullScreen && scrollController.hasClients) {
-    //   //     SchedulerBinding.instance.addPostFrameCallback(
-    //   //       (_) {
-    //   //         scrollController.animateTo(
-    //   //           scrollController.position.maxScrollExtent,
-    //   //           duration: const Duration(milliseconds: 100),
-    //   //           curve: Curves.fastOutSlowIn,
-    //   //         );
-    //   //       },
-    //   //     );
-    //   //   }
-    //   // }
-    // });
   }
 
   @override
@@ -204,11 +182,9 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
                           initialVideoId = youtubeLink.text;
                         }
                         setState(() {
-                          _controller = YoutubePlayerController(
-                            initialVideoId: initialVideoId,
-                            flags: const YoutubePlayerFlags(
-                              autoPlay: true,
-                            ),
+                          _controller = YoutubePlayerController.fromVideoId(
+                            videoId: initialVideoId,
+                            autoPlay: true,
                           );
                         });
                       },
@@ -223,17 +199,12 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
               if (_controller != null)
                 YoutubePlayer(
                   controller: _controller!,
-                  showVideoProgressIndicator: true,
-                  progressIndicatorColor: PRIMARY_COLOR,
-                  progressColors: const ProgressBarColors(
-                    playedColor: PRIMARY_COLOR,
-                    handleColor: PRIMARY_COLOR,
-                  ),
                 ),
               if (_controller == null)
                 Container(
                   color: Colors.grey[300],
-                  height: (MediaQuery.of(context).size.width - 32) * 0.56,
+                  height:
+                      (MediaQuery.of(context).size.width - 32) * youtubeRatio,
                   child: const Center(
                     child: Text(
                       'Youtube URL을 입력해주세요.',

@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:manager/common/model/model_with_id.dart';
+import 'package:manager/common/utils/data_utils.dart';
 
 part 'music_model.g.dart';
 
@@ -16,6 +17,9 @@ class MusicModel implements IModelWithId {
   // review : 한줄평
   final String review;
   // albumCover : 앨범 커버
+  @JsonKey(
+    fromJson: DataUtils.pathToUrl,
+  )
   final String albumCover;
   // youtubeLink : 유튜브 url
   final String youtubeLink;

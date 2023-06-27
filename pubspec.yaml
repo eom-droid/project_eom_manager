@@ -50,7 +50,8 @@ dependencies:
   intl: ^0.18.1
   collection: ^1.15.0
   video_player: ^2.6.1
-  youtube_player_flutter: ^8.1.2
+  youtube_player_iframe: ^4.0.4
+  webview_flutter: ^4.2.2
   
 
 

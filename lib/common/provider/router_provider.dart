@@ -5,6 +5,8 @@ import 'package:manager/common/view/root_tab.dart';
 import 'package:manager/common/view/splash_screen.dart';
 import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_edit_screen.dart';
+import 'package:manager/music/model/music_model.dart';
+import 'package:manager/music/view/music_detail_screen.dart';
 import 'package:manager/music/view/music_edit_screen.dart';
 
 final routerProvider = ChangeNotifierProvider<RouterProvider>((ref) {
@@ -41,6 +43,18 @@ class RouterProvider extends ChangeNotifier {
               builder: (_, state) => DiaryEditScreen(
                 id: state.pathParameters['rid']!,
               ),
+            ),
+            GoRoute(
+              path: 'music/:rid',
+              name: MusciDetailScreen.routeName,
+              builder: (_, state) {
+                MusicModel music = state.extra as MusicModel;
+
+                return MusciDetailScreen(
+                  id: state.pathParameters['rid']!,
+                  music: music,
+                );
+              },
             ),
             GoRoute(
               path: 'music/:rid/edit',

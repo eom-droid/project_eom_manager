@@ -62,3 +62,5 @@ enum DiaryCategory {
 }
 
 const paginationDefaultFetcgCount = 10;
+
+const youtubeRatio = 0.56;

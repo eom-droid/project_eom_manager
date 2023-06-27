@@ -15,6 +15,7 @@ class DiaryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print('?????????????????!!!!!!!!!!!!');
     return Stack(
       children: [
         PaginationListView<DiaryModel>(
