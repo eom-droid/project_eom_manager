@@ -21,8 +21,10 @@ class MusicModel implements IModelWithId {
     fromJson: DataUtils.pathToUrl,
   )
   final String albumCover;
-  // youtubeLink : 유튜브 url
-  final String youtubeLink;
+  // youtubeMusicId : 유튜브 뮤직 ID
+  final String youtubeMusicId;
+  // spotifyId : Spotify ID
+  final String spotifyId;
 
   MusicModel({
     required this.id,
@@ -30,7 +32,8 @@ class MusicModel implements IModelWithId {
     required this.artiste,
     required this.review,
     required this.albumCover,
-    required this.youtubeLink,
+    required this.youtubeMusicId,
+    required this.spotifyId,
   });
 
   factory MusicModel.empty() => MusicModel(
@@ -39,7 +42,8 @@ class MusicModel implements IModelWithId {
         artiste: '',
         review: '',
         albumCover: '',
-        youtubeLink: '',
+        youtubeMusicId: '',
+        spotifyId: '',
       );
 
   factory MusicModel.fromJson(Map<String, dynamic> json) =>

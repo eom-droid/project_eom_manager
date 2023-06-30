@@ -6,17 +6,6 @@ import 'package:manager/common/model/pagination_params.dart';
 import 'package:manager/common/provider/pagination_provider.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/repository/music_repository.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-
-final musicYoutubeProvider = Provider.family<YoutubePlayerController, String>(
-  (ref, arg) {
-    return YoutubePlayerController(
-      params: const YoutubePlayerParams(
-        showFullscreenButton: true,
-      ),
-    )..cueVideoById(videoId: arg);
-  },
-);
 
 final musicDetailProvider = Provider.family<MusicModel?, String>((ref, id) {
   final state = ref.watch(musicProvider);

@@ -13,7 +13,6 @@ import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/utils/flutter_utils.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/provider/music_provider.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class MusicEditScreen extends ConsumerStatefulWidget {
   static String get routeName => 'musicEdit';
@@ -30,16 +29,16 @@ class MusicEditScreen extends ConsumerStatefulWidget {
 }
 
 class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
-  YoutubePlayerController? _controller;
   final ScrollController scrollController = ScrollController();
 
   bool isFullScreen = false;
 
-  TextEditingController title = TextEditingController();
-  TextEditingController artiste = TextEditingController();
-  TextEditingController albumCover = TextEditingController();
-  TextEditingController review = TextEditingController();
-  TextEditingController youtubeLink = TextEditingController();
+  TextEditingController titleTextCon = TextEditingController();
+  TextEditingController artisteTextCon = TextEditingController();
+  TextEditingController albumCoverTextCon = TextEditingController();
+  TextEditingController reviewTextCon = TextEditingController();
+  TextEditingController youtubeMusicIdTextCon = TextEditingController();
+  TextEditingController spotifyIdTextCon = TextEditingController();
 
   bool isSaving = false;
 
@@ -50,17 +49,20 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
 
     if (widget.id != NEW_ID) {
       final model = ref.read(musicProvider.notifier).getMusicById(widget.id);
-      title.text = model.title;
-      artiste.text = model.artiste;
-      albumCover.text = model.albumCover;
-      review.text = model.review;
-      youtubeLink.text = model.youtubeLink;
-      if (youtubeLink.text != '') {
-        _controller = YoutubePlayerController.fromVideoId(
-          videoId: youtubeLink.text,
-          autoPlay: true,
-        );
-      }
+      titleTextCon.text = model.title;
+      artisteTextCon.text = model.artiste;
+      albumCoverTextCon.text = model.albumCover;
+      reviewTextCon.text = model.review;
+      youtubeMusicIdTextCon.text = model.youtubeMusicId;
+      spotifyIdTextCon.text = model.spotifyId;
+    } else {
+      titleTextCon.text = '홍대충';
+      artisteTextCon.text = 'lobonabeat';
+      reviewTextCon.text = "홍대충이라는 노래는 홍대에서";
+      youtubeMusicIdTextCon.text =
+          "https://music.youtube.com/watch?v=N-YypFxDC_0&feature=share";
+      spotifyIdTextCon.text =
+          "https://open.spotify.com/track/1HL8Jveuh7tZnCqHzGyyzB?si=678dd1c98b50405b";
     }
   }
 
@@ -84,7 +86,6 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       ],
       child: SafeArea(
         child: SingleChildScrollView(
-          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
@@ -103,9 +104,9 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
                     ),
                   ),
                   CustomImgInput(
-                    imgPath: albumCover.text,
+                    imgPath: albumCoverTextCon.text,
                     onChanged: (value) {
-                      albumCover.text = value;
+                      albumCoverTextCon.text = value;
                     },
                     maxheightWidth: 500,
                   ),
@@ -114,12 +115,12 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
               const SizedBox(height: 12.0),
               CustomTextFormField(
                 label: '제목',
-                controller: title,
+                controller: titleTextCon,
               ),
               const SizedBox(height: 12.0),
               CustomTextFormField(
                 label: '아티스트',
-                controller: artiste,
+                controller: artisteTextCon,
               ),
               const SizedBox(height: 12.0),
               Container(
@@ -149,73 +150,23 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
                       thickness: 1.5,
                     ),
                     MultiLineTextField(
-                      controller: review,
+                      controller: reviewTextCon,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12.0),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: CustomTextFormField(
-                      label: 'Youtube',
-                      onSaved: (String? value) {
-                        if (value != null) {
-                          //여기 완성해야됨
-                        }
-                      },
-                      controller: youtubeLink,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        FocusScope.of(context).requestFocus(FocusNode());
-
-                        String initialVideoId;
-                        if (youtubeLink.text.startsWith("http")) {
-                          initialVideoId = youtubeLink.text.split("v=")[1];
-                        } else {
-                          initialVideoId = youtubeLink.text;
-                        }
-                        setState(() {
-                          _controller = YoutubePlayerController.fromVideoId(
-                            videoId: initialVideoId,
-                            autoPlay: true,
-                          );
-                        });
-                      },
-                      child: const Text('불러오기'),
-                    ),
-                  )
-                ],
+              CustomTextFormField(
+                label: 'Youtube Music Id',
+                controller: youtubeMusicIdTextCon,
+              ),
+              CustomTextFormField(
+                label: 'Spotify Id',
+                controller: spotifyIdTextCon,
               ),
               const SizedBox(
                 height: 16.0,
               ),
-              if (_controller != null)
-                YoutubePlayer(
-                  controller: _controller!,
-                ),
-              if (_controller == null)
-                Container(
-                  color: Colors.grey[300],
-                  height:
-                      (MediaQuery.of(context).size.width - 32) * youtubeRatio,
-                  child: const Center(
-                    child: Text(
-                      'Youtube URL을 입력해주세요.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: PRIMARY_COLOR,
-                      ),
-                    ),
-                  ),
-                ),
               const SizedBox(height: 200.0),
             ],
           ),
@@ -225,7 +176,7 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
   }
 
   bool validate() {
-    if (title.text == '') {
+    if (titleTextCon.text == '') {
       FlutterUtils.showSnackBar(
         context: context,
         content: '제목을 입력해주세요.',
@@ -233,7 +184,7 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       return false;
     }
 
-    if (artiste.text == '') {
+    if (artisteTextCon.text == '') {
       FlutterUtils.showSnackBar(
         context: context,
         content: '아티스트를 입력해주세요.',
@@ -241,7 +192,7 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       return false;
     }
 
-    if (albumCover.text == '') {
+    if (albumCoverTextCon.text == '') {
       FlutterUtils.showSnackBar(
         context: context,
         content: '앨범 커버를 입력해주세요.',
@@ -249,7 +200,7 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       return false;
     }
 
-    if (review.text == '') {
+    if (reviewTextCon.text == '') {
       FlutterUtils.showSnackBar(
         context: context,
         content: '한줄평을 입력해주세요.',
@@ -257,13 +208,22 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       return false;
     }
 
-    if (youtubeLink.text == '') {
+    if (youtubeMusicIdTextCon.text == '') {
       FlutterUtils.showSnackBar(
         context: context,
-        content: 'Youtube URL을 입력해주세요.',
+        content: 'Youtube Music URL을 입력해주세요.',
       );
       return false;
     }
+
+    if (spotifyIdTextCon.text == '') {
+      FlutterUtils.showSnackBar(
+        context: context,
+        content: 'Spotify URL을 입력해주세요.',
+      );
+      return false;
+    }
+
     return true;
   }
 
@@ -273,20 +233,32 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
     FullLoadingScreen(context).startLoading();
     bool validateResult = validate();
     if (validateResult) {
+      // youtube music id 만 자르기
+      youtubeMusicIdTextCon.text = youtubeMusicIdTextCon.text.startsWith("http")
+          ? youtubeMusicIdTextCon.text.split("v=")[1]
+          : youtubeMusicIdTextCon.text;
+
+      youtubeMusicIdTextCon.text = youtubeMusicIdTextCon.text.split("&")[0];
+
+      // spotify track id 만 자르기
+      spotifyIdTextCon.text = spotifyIdTextCon.text.startsWith("http")
+          ? spotifyIdTextCon.text.split("track/")[1]
+          : spotifyIdTextCon.text;
+      spotifyIdTextCon.text = spotifyIdTextCon.text.split("?")[0];
+
       MusicModel music = MusicModel(
         id: widget.id,
-        title: title.text,
-        artiste: artiste.text,
-        albumCover: albumCover.text,
-        review: review.text,
-        youtubeLink: youtubeLink.text.startsWith("http")
-            ? youtubeLink.text.split("v=")[1]
-            : youtubeLink.text,
+        title: titleTextCon.text,
+        artiste: artisteTextCon.text,
+        albumCover: albumCoverTextCon.text,
+        review: reviewTextCon.text,
+        youtubeMusicId: youtubeMusicIdTextCon.text,
+        spotifyId: spotifyIdTextCon.text,
       );
-      final String thumbNailFileName = albumCover.text.split('/').last;
+      final String thumbNailFileName = albumCoverTextCon.text.split('/').last;
 
       MultipartFile thumbnail = await MultipartFile.fromFile(
-        albumCover.text,
+        albumCoverTextCon.text,
         filename: thumbNailFileName,
       );
 

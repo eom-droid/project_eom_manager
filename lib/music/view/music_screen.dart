@@ -5,7 +5,6 @@ import 'package:manager/common/components/pagination_list_view.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/music/components/music_card.dart';
 import 'package:manager/music/provider/music_provider.dart';
-import 'package:manager/music/view/music_detail_screen.dart';
 import 'package:manager/music/view/music_edit_screen.dart';
 
 class MusicScreen extends ConsumerWidget {
@@ -22,19 +21,8 @@ class MusicScreen extends ConsumerWidget {
             // return MusicCard.fromModel(
             //   model: model,
             // );
-            return InkWell(
-              onTap: () async {
-                // context.go(MusciDetailScreen.routeName, pathParameters: {'rid': model.id});
-
-                context.pushNamed(
-                  MusciDetailScreen.routeName,
-                  pathParameters: {'rid': model.id},
-                  extra: model,
-                );
-              },
-              child: MusicCard.fromModel(
-                model: model,
-              ),
+            return MusicCard.fromModel(
+              model: model,
             );
           },
         ),
