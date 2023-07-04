@@ -45,6 +45,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
+      isFullScreen: true,
       bottomNavigationBar: BottomNavigationBar(
         // 선택 시 색상
         selectedItemColor: PRIMARY_COLOR,
@@ -80,9 +81,9 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
           // 좌우 스크롤 방지
           physics: const NeverScrollableScrollPhysics(),
           controller: controller,
-          children: const [
-            HomeScreen(),
-            DiaryScreen(),
+          children: [
+            const HomeScreen(),
+            const DiaryScreen(),
             MusicScreen(),
           ],
         ),

@@ -15,79 +15,81 @@ class DiaryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('?????????????????!!!!!!!!!!!!');
-    return Stack(
-      children: [
-        PaginationListView<DiaryModel>(
-          provider: diaryProvider,
-          itemBuilder: <DiaryModel>(_, int index, model) {
-            return InkWell(
-              onTap: () async {
-                context.pushNamed(
-                  DiaryDetailScreen.routeName,
-                  pathParameters: {'rid': model.id},
-                );
-              },
-              child: DiaryCard.fromModel(
-                model: model,
-                onTrheeDotSelected: (int? value) async {
-                  if (value == 1) {
-                    pushNamed(
-                      ref: ref,
-                      context: context,
-                      routeName: DiaryEditScreen.routeName,
-                      snackBarText: 'Diary updated!',
-                      id: model.id,
-                    );
-                  } else if (value == 2) {
-                    showPopUp(
-                      context: context,
-                      onConfirm: () async {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return const AlertDialog(
-                              title: Text('삭제중입니다.'),
-                              content: LinearProgressIndicator(),
-                            );
-                          },
-                        );
-                        await ref
-                            .read(diaryProvider.notifier)
-                            .deleteDiary(id: model.id);
-
-                        // 위에서 다이얼로그를 하나 더 열기때문에
-                        // pop을 하나더 진행함
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                      onCancel: () {
-                        Navigator.of(context).pop();
-                      },
-                    );
-                  }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Stack(
+        children: [
+          PaginationListView<DiaryModel>(
+            provider: diaryProvider,
+            itemBuilder: <DiaryModel>(_, int index, model) {
+              return InkWell(
+                onTap: () async {
+                  context.pushNamed(
+                    DiaryDetailScreen.routeName,
+                    pathParameters: {'rid': model.id},
+                  );
                 },
-              ),
-            );
-          },
-        ),
-        Positioned(
-          bottom: 20,
-          right: 0,
-          child: FloatingActionButton(
-            onPressed: () async {
-              pushNamed(
-                ref: ref,
-                context: context,
-                routeName: DiaryEditScreen.routeName,
-                snackBarText: 'Diary added!',
+                child: DiaryCard.fromModel(
+                  model: model,
+                  onTrheeDotSelected: (int? value) async {
+                    if (value == 1) {
+                      pushNamed(
+                        ref: ref,
+                        context: context,
+                        routeName: DiaryEditScreen.routeName,
+                        snackBarText: 'Diary updated!',
+                        id: model.id,
+                      );
+                    } else if (value == 2) {
+                      showPopUp(
+                        context: context,
+                        onConfirm: () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const AlertDialog(
+                                title: Text('삭제중입니다.'),
+                                content: LinearProgressIndicator(),
+                              );
+                            },
+                          );
+                          await ref
+                              .read(diaryProvider.notifier)
+                              .deleteDiary(id: model.id);
+
+                          // 위에서 다이얼로그를 하나 더 열기때문에
+                          // pop을 하나더 진행함
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                        onCancel: () {
+                          Navigator.of(context).pop();
+                        },
+                      );
+                    }
+                  },
+                ),
               );
             },
-            child: const Icon(Icons.add),
           ),
-        ),
-      ],
+          Positioned(
+            bottom: 20,
+            right: 0,
+            child: FloatingActionButton(
+              onPressed: () async {
+                pushNamed(
+                  ref: ref,
+                  context: context,
+                  routeName: DiaryEditScreen.routeName,
+                  snackBarText: 'Diary added!',
+                );
+              },
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

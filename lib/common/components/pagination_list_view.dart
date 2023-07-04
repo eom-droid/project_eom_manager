@@ -16,10 +16,14 @@ class PaginationListView<T extends IModelPagination>
   final StateNotifierProvider<PaginationProvider, CursorPaginationBase>
       provider;
   final PaginationWidgetBuilder<T> itemBuilder;
+  final Widget Function(CursorPagination<T> cp)? customList;
+  final ScrollController? controller;
   const PaginationListView({
     Key? key,
     required this.provider,
     required this.itemBuilder,
+    this.customList,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -29,11 +33,12 @@ class PaginationListView<T extends IModelPagination>
 
 class _PaginationListViewState<T extends IModelPagination>
     extends ConsumerState<PaginationListView> {
-  final ScrollController controller = ScrollController();
+  late final ScrollController controller;
 
   @override
   void initState() {
     super.initState();
+    controller = widget.controller ?? ScrollController();
     controller.addListener(listener);
   }
 
@@ -93,6 +98,10 @@ class _PaginationListViewState<T extends IModelPagination>
     // CursorPaginationRefetching
 
     final cp = state as CursorPagination<T>;
+
+    if (widget.customList != null) {
+      return widget.customList!(cp);
+    }
 
     return RefreshIndicator(
       onRefresh: () async {
