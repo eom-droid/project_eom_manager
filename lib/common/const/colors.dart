@@ -17,3 +17,6 @@ const SPOTIFY_LOGO_COLOR = Color(0xFF25d34e);
 
 // Youtube Music logo Color
 const YOUTUBE_MUSIC_LOGO_COLOR = Color(0xFFfc0004);
+
+// Black Color
+const COMMON_BLACK = Color(0xFF232323);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/components/pagination_list_view.dart';
+import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/music/components/music_card.dart';
@@ -15,22 +16,55 @@ class MusicScreen extends ConsumerWidget {
 
   SliverAppBar _renderAppBar() {
     return SliverAppBar(
+      backgroundColor: COMMON_BLACK,
       // 맨 위에서 한계 이상으로 스크롤 했을때
       // 남는 공간을 차지
       stretch: true,
       // appBar의 길이
       expandedHeight: 500,
       // 사라질때의 크기
-      collapsedHeight: 200,
+      collapsedHeight: 100,
+
       // 늘어났을때 어느것을 위치하고 싶은지
       flexibleSpace: FlexibleSpaceBar(
-        background: Image.asset(
-          'asset/imgs/image_1.jpeg',
-          fit: BoxFit.cover,
+        background: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: AssetImage(
+                    "asset/imgs/bg-img.jpg",
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                    Colors.transparent,
+                    COMMON_BLACK,
+                  ],
+                ),
+              ),
+            ),
+            const Positioned(
+              top: 130,
+              left: 16,
+              child: Text(
+                '여기에 무언가 괜찮은\n것들을 넣어야\n뭐넣지',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28.0,
+                    fontWeight: FontWeight.bold),
+              ),
+            )
+          ],
         ),
-        title: const Text('FlexibleSpaceBar'),
       ),
-      title: const Text('CustomScrollViewScreen'),
     );
   }
 
@@ -73,44 +107,47 @@ class MusicScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: () async {
-            ref.read(musicProvider.notifier).paginate(forceRefetch: true);
-          },
-          child: PaginationListView(
-            provider: musicProvider,
-            itemBuilder: <MusicModel>(_, int index, model) {
-              return MusicCard.fromModel(
-                model: model,
-              );
+    return Container(
+      color: COMMON_BLACK,
+      child: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              ref.read(musicProvider.notifier).paginate(forceRefetch: true);
             },
-            customList: (CursorPagination cp) {
-              return CustomScrollView(
-                controller: _controller,
-                slivers: [
-                  _renderAppBar(),
-                  _renderMusicList(cp),
-                ],
-              );
-            },
+            child: PaginationListView(
+              provider: musicProvider,
+              itemBuilder: <MusicModel>(_, int index, model) {
+                return MusicCard.fromModel(
+                  model: model,
+                );
+              },
+              customList: (CursorPagination cp) {
+                return CustomScrollView(
+                  controller: _controller,
+                  slivers: [
+                    _renderAppBar(),
+                    _renderMusicList(cp),
+                  ],
+                );
+              },
+            ),
           ),
-        ),
-        Positioned(
-          bottom: 20,
-          right: 0,
-          child: FloatingActionButton(
-            onPressed: () async {
-              context.pushNamed(
-                MusicEditScreen.routeName,
-                pathParameters: {'rid': NEW_ID},
-              );
-            },
-            child: const Icon(Icons.add),
-          ),
-        )
-      ],
+          Positioned(
+            bottom: 20,
+            right: 0,
+            child: FloatingActionButton(
+              onPressed: () async {
+                context.pushNamed(
+                  MusicEditScreen.routeName,
+                  pathParameters: {'rid': NEW_ID},
+                );
+              },
+              child: const Icon(Icons.add),
+            ),
+          )
+        ],
+      ),
     );
     // return CustomScrollView(
     //   slivers: [

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:manager/common/const/colors.dart';
-import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/home/view/home_screen.dart';
-import 'package:manager/music/view/music_screen.dart';
 
 class RootTab extends StatefulWidget {
   static String get routeName => 'home';
@@ -44,50 +40,51 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultLayout(
-      isFullScreen: true,
-      bottomNavigationBar: BottomNavigationBar(
-        // 선택 시 색상
-        selectedItemColor: PRIMARY_COLOR,
-        // 선택 시 폰트 사이즈
-        selectedFontSize: 10.0,
-        // 선택 안했을 때 색상
-        unselectedItemColor: BODY_TEXT_COLOR,
-        // 선택 안했을 때 폰트 사이즈
-        unselectedFontSize: 10.0,
-        // 선택 시 애니메이션
-        type: BottomNavigationBarType.fixed,
-        onTap: (int index) {
-          controller.animateTo(index);
-        },
-        currentIndex: index,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book_outlined),
-            label: '일기장',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_outline_outlined),
-            label: '플리',
-          ),
-        ],
-      ),
-      child: Center(
-        child: TabBarView(
-          // 좌우 스크롤 방지
-          physics: const NeverScrollableScrollPhysics(),
-          controller: controller,
-          children: [
-            const HomeScreen(),
-            const DiaryScreen(),
-            MusicScreen(),
-          ],
-        ),
-      ),
-    );
+    return HomeScreen();
+    // return DefaultLayout(
+    //   isFullScreen: true,
+    //   bottomNavigationBar: BottomNavigationBar(
+    //     // 선택 시 색상
+    //     selectedItemColor: PRIMARY_COLOR,
+    //     // 선택 시 폰트 사이즈
+    //     selectedFontSize: 10.0,
+    //     // 선택 안했을 때 색상
+    //     unselectedItemColor: BODY_TEXT_COLOR,
+    //     // 선택 안했을 때 폰트 사이즈
+    //     unselectedFontSize: 10.0,
+    //     // 선택 시 애니메이션
+    //     type: BottomNavigationBarType.fixed,
+    //     onTap: (int index) {
+    //       controller.animateTo(index);
+    //     },
+    //     currentIndex: index,
+    //     items: const [
+    //       BottomNavigationBarItem(
+    //         icon: Icon(Icons.home_outlined),
+    //         label: '홈',
+    //       ),
+    //       BottomNavigationBarItem(
+    //         icon: Icon(Icons.menu_book_outlined),
+    //         label: '일기장',
+    //       ),
+    //       BottomNavigationBarItem(
+    //         icon: Icon(Icons.play_circle_outline_outlined),
+    //         label: '플리',
+    //       ),
+    //     ],
+    //   ),
+    //   child: Center(
+    //     child: TabBarView(
+    //       // 좌우 스크롤 방지
+    //       physics: const NeverScrollableScrollPhysics(),
+    //       controller: controller,
+    //       children: [
+    //         const HomeScreen(),
+    //         const DiaryScreen(),
+    //         MusicScreen(),
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 }
