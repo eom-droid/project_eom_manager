@@ -5,7 +5,9 @@ import 'package:manager/common/view/root_tab.dart';
 import 'package:manager/common/view/splash_screen.dart';
 import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_edit_screen.dart';
+import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/music/view/music_edit_screen.dart';
+import 'package:manager/music/view/music_screen.dart';
 
 final routerProvider = ChangeNotifierProvider<RouterProvider>((ref) {
   return RouterProvider(ref: ref);
@@ -29,6 +31,11 @@ class RouterProvider extends ChangeNotifier {
           builder: (_, __) => const RootTab(),
           routes: [
             GoRoute(
+              path: 'diary',
+              name: DiaryScreen.routeName,
+              builder: (_, state) => DiaryScreen(),
+            ),
+            GoRoute(
               path: 'diary/:rid',
               name: DiaryDetailScreen.routeName,
               builder: (_, state) => DiaryDetailScreen(
@@ -42,18 +49,11 @@ class RouterProvider extends ChangeNotifier {
                 id: state.pathParameters['rid']!,
               ),
             ),
-            // GoRoute(
-            //   path: 'music/:rid',
-            //   name: MusciDetailScreen.routeName,
-            //   builder: (_, state) {
-            //     MusicModel music = state.extra as MusicModel;
-
-            //     return MusciDetailScreen(
-            //       id: state.pathParameters['rid']!,
-            //       music: music,
-            //     );
-            //   },
-            // ),
+            GoRoute(
+              path: 'music',
+              name: MusicScreen.routeName,
+              builder: (_, state) => MusicScreen(),
+            ),
             GoRoute(
               path: 'music/:rid/edit',
               name: MusicEditScreen.routeName,
@@ -68,26 +68,6 @@ class RouterProvider extends ChangeNotifier {
           name: SplashScreen.routeName,
           builder: (_, __) => const SplashScreen(),
         ),
-        // GoRoute(
-        //   path: '/diaryAdd',
-        //   name: DiaryAddScreen.routeName,
-        //   builder: (_, __) => const DiaryAddScreen(),
-        // ),
-        // GoRoute(
-        //   path: '/login',
-        //   name: LoginScreen.routeName,
-        //   builder: (_, __) => const LoginScreen(),
-        // ),
-        // GoRoute(
-        //   path: '/basket',
-        //   name: BasketScreen.routeName,
-        //   builder: (_, __) => const BasketScreen(),
-        // ),
-        // GoRoute(
-        //   path: '/order_done',
-        //   name: OrderDoneScreen.routeName,
-        //   builder: (_, __) => const OrderDoneScreen(),
-        // ),
       ];
 
   // SplashScreen

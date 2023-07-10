@@ -2,8 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:manager/common/const/data.dart';
 import 'dart:math' as math;
+
+import 'package:manager/diary/view/diary_screen.dart';
+import 'package:manager/music/view/music_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       body: Stack(
         children: [
           BackgroundImage(),
+          BackgroundFilter(),
           _FrontImagesRender(),
         ],
       ),
@@ -38,12 +43,19 @@ class BackgroundImage extends StatefulWidget {
 class _BackgroundImageState extends State<BackgroundImage>
     with TickerProviderStateMixin {
   late final AnimationController _animationController = AnimationController(
-    duration: const Duration(seconds: 60),
+    duration: const Duration(seconds: 120),
     vsync: this,
     value: 0.0,
     lowerBound: 0.0,
     upperBound: homeBackgroundImageWidth - MediaQuery.of(context).size.width,
   )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +71,17 @@ class _BackgroundImageState extends State<BackgroundImage>
           ),
         );
       }),
+    );
+  }
+}
+
+class BackgroundFilter extends StatelessWidget {
+  const BackgroundFilter({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFD9D9D9).withOpacity(0.05),
     );
   }
 }
@@ -188,9 +211,12 @@ class _FrontImagesRender extends StatelessWidget {
           Positioned(
             bottom: 290,
             left: 110,
-            child: SvgPicture.asset(
-              "asset/imgs/icons/star_1.svg",
-              width: 75,
+            child: RotationTransition(
+              turns: const AlwaysStoppedAnimation(25 / 360),
+              child: SvgPicture.asset(
+                "asset/imgs/icons/star_1.svg",
+                width: 75,
+              ),
             ),
           ),
           // 10. 우측하단 스티커
@@ -230,6 +256,12 @@ class _FrontImagesRender extends StatelessWidget {
             bottom: 0,
             child: _menuBar(
               context: context,
+              onDiaryTap: () {
+                context.pushNamed(DiaryScreen.routeName);
+              },
+              onPlayListTap: () {
+                context.pushNamed(MusicScreen.routeName);
+              },
             ),
           ),
         ],
@@ -239,6 +271,8 @@ class _FrontImagesRender extends StatelessWidget {
 
   Widget _menuBar({
     required BuildContext context,
+    required VoidCallback onDiaryTap,
+    required VoidCallback onPlayListTap,
   }) {
     return Stack(
       alignment: Alignment.bottomCenter,
@@ -252,7 +286,7 @@ class _FrontImagesRender extends StatelessWidget {
             ),
           ),
           width: MediaQuery.of(context).size.width,
-          height: 300,
+          height: MediaQuery.of(context).size.height / 3 + 20,
         ),
         Padding(
           padding: EdgeInsets.only(
@@ -263,49 +297,52 @@ class _FrontImagesRender extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                    child: Container(
-                      width: 75,
-                      height: 115,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5.0),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 3.0,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0xFFD9D9D9),
-                            blurRadius: 10,
+                InkWell(
+                  onTap: onDiaryTap,
+                  child: ClipRRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: Container(
+                        width: 75,
+                        height: 115,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5.0),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 3.0,
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            "asset/imgs/icons/diary.svg",
-                            width: 38.0,
-                          ),
-                          const Text(
-                            'diary',
-                            style: TextStyle(
-                              fontFamily: "sabreshark",
-                              fontSize: 12.0,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0xFFD9D9D9),
+                              blurRadius: 10,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              "asset/imgs/icons/diary.svg",
+                              width: 38.0,
+                            ),
+                            const Text(
+                              'diary',
+                              style: TextStyle(
+                                fontFamily: "sabreshark",
+                                fontSize: 12.0,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-                ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                InkWell(
+                  onTap: onPlayListTap,
+                  child: ClipRRect(
                     child: Container(
                       width: 75,
                       height: 115,
@@ -327,7 +364,7 @@ class _FrontImagesRender extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SvgPicture.asset(
-                            "asset/imgs/icons/playList.svg",
+                            "asset/imgs/icons/playlist.svg",
                             width: 50.0,
                           ),
                           const Text(

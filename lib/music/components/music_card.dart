@@ -44,190 +44,191 @@ class MusicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        Stack(
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(10),
-                ),
-                color: Colors.black,
-                image: DecorationImage(
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.5),
-                    BlendMode.dstATop,
-                  ),
-                  image: NetworkImage(albumCover),
-                  fit: BoxFit.cover,
-                ),
+        Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.width,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(
+              Radius.circular(10),
+            ),
+            color: Colors.black,
+
+            // image: DecorationImage(
+            //   colorFilter: ColorFilter.mode(
+            //     Colors.black.withOpacity(0.5),
+            //     BlendMode.dstATop,
+            //   ),
+            //   image: NetworkImage(albumCover),
+            //   fit: BoxFit.cover,
+            // ),
+            // border: Border.all(
+            //   color: Colors.white,
+            //   width: 3,
+            // ),
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10),
+            ),
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(
+                sigmaX: 5.0,
+                sigmaY: 5.0,
+              ),
+              child: Image.network(
+                albumCover,
+                fit: BoxFit.cover,
+                color: Colors.white.withOpacity(0.7),
+                colorBlendMode: BlendMode.modulate,
               ),
             ),
-            ClipRRect(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 10.0,
-                  sigmaY: 10.0,
-                ),
-                child: Container(
-                  color: Colors.transparent,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.width,
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  color: const Color.fromARGB(255, 25, 25, 25).withOpacity(0.6),
-                ),
-                width: MediaQuery.of(context).size.width - 32,
-                child: Dismissible(
-                  confirmDismiss: (DismissDirection direction) async {
-                    if (direction == DismissDirection.startToEnd) {
-                      await launchSpotify(spotifyId);
-                    } else if (direction == DismissDirection.endToStart) {
-                      await launchYoutubeMusic(youtubeMusicId);
-                    }
-                    return false;
-                  },
-                  background: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 9),
-                    child: Container(
-                      color: SPOTIFY_LOGO_COLOR.withAlpha(100),
-                      child: const Padding(
-                        padding: EdgeInsets.only(left: 16.0),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Spotify',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  secondaryBackground: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 9),
-                    child: Container(
-                      color: YOUTUBE_MUSIC_LOGO_COLOR.withAlpha(100),
-                      child: const Padding(
-                        padding: EdgeInsets.only(right: 16.0),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'YT Music',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  key: Key(id),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: SPOTIFY_LOGO_COLOR.withAlpha(100),
-                          borderRadius: const BorderRadius.only(
-                            bottomRight: Radius.circular(50),
-                            topRight: Radius.circular(50),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: SvgPicture.asset(
-                            'asset/imgs/spotify-logo.svg',
-                            height: 20,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                              ),
-                            ),
-                            Text(
-                              artiste,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: YOUTUBE_MUSIC_LOGO_COLOR.withAlpha(100),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(50),
-                            topLeft: Radius.circular(50),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: SvgPicture.asset(
-                            'asset/imgs/youtube-music-logo.svg',
-                            height: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-        // Container(
-        //   width: MediaQuery.of(context).size.width,
-        //   padding: const EdgeInsets.symmetric(
-        //     horizontal: 16.0,
-        //     vertical: 16.0,
+        // ClipRRect(
+        //   borderRadius: const BorderRadius.all(
+        //     Radius.circular(10),
         //   ),
-        //   decoration: BoxDecoration(
-        //     borderRadius: const BorderRadius.only(
-        //       bottomLeft: Radius.circular(10),
-        //       bottomRight: Radius.circular(10),
+        //   child: BackdropFilter(
+        //     filter: ImageFilter.blur(
+        //       sigmaX: 5.0,
+        //       sigmaY: 5.0,
         //     ),
-        //     color: Colors.black.withOpacity(0.3),
-        //   ),
-        //   child: Text(
-        //     widget.review,
-        //     textAlign: TextAlign.center,
-        //     style: const TextStyle(
-        //       fontSize: 15,
+        //     child: Container(
+        //       color: Colors.transparent,
+        //       width: MediaQuery.of(context).size.width,
+        //       height: MediaQuery.of(context).size.width,
         //     ),
         //   ),
         // ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          child: ClipRect(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
+                ),
+                color: const Color.fromARGB(255, 25, 25, 25).withOpacity(0.6),
+              ),
+              width: MediaQuery.of(context).size.width - 32,
+              child: Dismissible(
+                confirmDismiss: (DismissDirection direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    await launchSpotify(spotifyId);
+                  } else if (direction == DismissDirection.endToStart) {
+                    await launchYoutubeMusic(youtubeMusicId);
+                  }
+                  return false;
+                },
+                background: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  child: Container(
+                    color: SPOTIFY_LOGO_COLOR.withAlpha(100),
+                    child: const Padding(
+                      padding: EdgeInsets.only(left: 16.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Spotify',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontFamily: "sabreshark",
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                secondaryBackground: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  child: Container(
+                    color: YOUTUBE_MUSIC_LOGO_COLOR.withAlpha(100),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 16.0),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'YT Music',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontFamily: "sabreshark",
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                key: Key(id),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: SPOTIFY_LOGO_COLOR.withAlpha(100),
+                        borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(50),
+                          topRight: Radius.circular(50),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: SvgPicture.asset(
+                          'asset/imgs/icons/spotify-logo.svg',
+                          height: 20,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
+                          ),
+                          Text(
+                            artiste,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: YOUTUBE_MUSIC_LOGO_COLOR.withAlpha(100),
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(50),
+                          topLeft: Radius.circular(50),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: SvgPicture.asset(
+                          'asset/imgs/icons/youtube-music-logo.svg',
+                          height: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

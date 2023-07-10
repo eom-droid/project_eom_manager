@@ -2,95 +2,316 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/components/pagination_list_view.dart';
+import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
+import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/diary/components/diary_card.dart';
-import 'package:manager/diary/model/diary_model.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
-import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_edit_screen.dart';
 
 class DiaryScreen extends ConsumerWidget {
-  const DiaryScreen({super.key});
+  static String get routeName => 'diary';
+  DiaryScreen({super.key});
+  final ScrollController _controller = ScrollController();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Stack(
+    return Scaffold(
+      backgroundColor: BACKGROUND_BLACK,
+      body: Stack(
         children: [
-          PaginationListView<DiaryModel>(
-            provider: diaryProvider,
-            itemBuilder: <DiaryModel>(_, int index, model) {
-              return InkWell(
-                onTap: () async {
-                  context.pushNamed(
-                    DiaryDetailScreen.routeName,
-                    pathParameters: {'rid': model.id},
-                  );
-                },
-                child: DiaryCard.fromModel(
-                  model: model,
-                  onTrheeDotSelected: (int? value) async {
-                    if (value == 1) {
-                      pushNamed(
-                        ref: ref,
-                        context: context,
-                        routeName: DiaryEditScreen.routeName,
-                        snackBarText: 'Diary updated!',
-                        id: model.id,
-                      );
-                    } else if (value == 2) {
-                      showPopUp(
-                        context: context,
-                        onConfirm: () async {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              return const AlertDialog(
-                                title: Text('삭제중입니다.'),
-                                content: LinearProgressIndicator(),
-                              );
-                            },
-                          );
-                          await ref
-                              .read(diaryProvider.notifier)
-                              .deleteDiary(id: model.id);
-
-                          // 위에서 다이얼로그를 하나 더 열기때문에
-                          // pop을 하나더 진행함
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                        onCancel: () {
-                          Navigator.of(context).pop();
-                        },
-                      );
-                    }
-                  },
-                ),
-              );
+          RefreshIndicator(
+            onRefresh: () async {
+              ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
             },
+            child: PaginationListView(
+              provider: diaryProvider,
+              itemBuilder: <DiaryModel>(_, int index, model) {
+                return DiaryCard.fromModel(
+                  model: model,
+                  onThreeDotSelected: (int? value) {},
+                );
+              },
+              customList: (CursorPagination cp) {
+                return CustomScrollView(
+                  controller: _controller,
+                  slivers: [
+                    _renderAppBar(context),
+                    _renderMusicList(cp),
+                  ],
+                );
+              },
+            ),
           ),
           Positioned(
-            bottom: 20,
-            right: 0,
+            bottom: MediaQuery.of(context).padding.bottom,
+            right: 20.0,
             child: FloatingActionButton(
               onPressed: () async {
-                pushNamed(
-                  ref: ref,
-                  context: context,
-                  routeName: DiaryEditScreen.routeName,
-                  snackBarText: 'Diary added!',
+                context.pushNamed(
+                  DiaryEditScreen.routeName,
+                  pathParameters: {'rid': NEW_ID},
                 );
               },
               child: const Icon(Icons.add),
             ),
-          ),
+          )
         ],
       ),
     );
+  }
+
+  SliverAppBar _renderAppBar(BuildContext context) {
+    return SliverAppBar(
+      backgroundColor: BACKGROUND_BLACK,
+      // 맨 위에서 한계 이상으로 스크롤 했을때
+      // 남는 공간을 차지
+      stretch: true,
+      // appBar의 길이
+      expandedHeight: MediaQuery.of(context).size.width -
+          MediaQuery.of(context).padding.top,
+      // 상단 고정
+      pinned: true,
+
+      // 늘어났을때 어느것을 위치하고 싶은지
+      flexibleSpace: FlexibleSpaceBar(
+        // centerTitle: false,
+
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'PlayList',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'sabreshark',
+                fontSize: 20.0,
+              ),
+            ),
+            SizedBox(width: 16.0),
+          ],
+        ),
+        background: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  alignment: Alignment.bottomLeft,
+                  fit: BoxFit.cover,
+                  image: AssetImage(
+                    "asset/imgs/music/appbar_background.jpg",
+                  ),
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                    Colors.transparent,
+                    BACKGROUND_BLACK.withOpacity(0.6),
+                    BACKGROUND_BLACK,
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 60,
+              left: 16,
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '가끔 먹어야 맛있는',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
+                      height: 1.5,
+                    ),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '감자알칩',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 32.0,
+                          fontWeight: FontWeight.bold,
+                          height: 1.5,
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Text(
+                        '같은',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverPadding _renderMusicList(
+    CursorPagination cp,
+  ) {
+    final musicList = cp.data;
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+      ),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index == cp.data.length) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 64.0,
+                ),
+                child: Center(
+                  child: cp is CursorPaginationFetchingMore
+                      ? const CircularProgressIndicator()
+                      : const Text(
+                          '마지막 입니다.',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              );
+            }
+
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 32.0,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.8),
+                        blurRadius: 1,
+                        spreadRadius: 3,
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DiaryCard.fromModel(
+                    model: musicList[index],
+                    onThreeDotSelected: (int? value) async {},
+                  ),
+                ),
+              ),
+            );
+          },
+          childCount: musicList.length + 1,
+        ),
+      ),
+    );
+
+    // return Scaffold(
+    //   backgroundColor: BACKGROUND_BLACK,
+    //   body: Padding(
+    //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    //     child: Stack(
+    //       children: [
+    //         PaginationListView<DiaryModel>(
+    //           provider: diaryProvider,
+    //           itemBuilder: <DiaryModel>(_, int index, model) {
+    //             return InkWell(
+    //               onTap: () async {
+    //                 context.pushNamed(
+    //                   DiaryDetailScreen.routeName,
+    //                   pathParameters: {'rid': model.id},
+    //                 );
+    //               },
+    //               child: DiaryCard.fromModel(
+    //                 model: model,
+    //                 onTrheeDotSelected: (int? value) async {
+    //                   if (value == 1) {
+    //                     pushNamed(
+    //                       ref: ref,
+    //                       context: context,
+    //                       routeName: DiaryEditScreen.routeName,
+    //                       snackBarText: 'Diary updated!',
+    //                       id: model.id,
+    //                     );
+    //                   } else if (value == 2) {
+    //                     showPopUp(
+    //                       context: context,
+    //                       onConfirm: () async {
+    //                         showDialog(
+    //                           context: context,
+    //                           barrierDismissible: false,
+    //                           builder: (BuildContext context) {
+    //                             return const AlertDialog(
+    //                               title: Text('삭제중입니다.'),
+    //                               content: LinearProgressIndicator(),
+    //                             );
+    //                           },
+    //                         );
+    //                         await ref
+    //                             .read(diaryProvider.notifier)
+    //                             .deleteDiary(id: model.id);
+
+    //                         // 위에서 다이얼로그를 하나 더 열기때문에
+    //                         // pop을 하나더 진행함
+    //                         Navigator.of(context).pop();
+    //                         Navigator.of(context).pop();
+    //                       },
+    //                       onCancel: () {
+    //                         Navigator.of(context).pop();
+    //                       },
+    //                     );
+    //                   }
+    //                 },
+    //               ),
+    //             );
+    //           },
+    //         ),
+    //         Positioned(
+    //           bottom: MediaQuery.of(context).padding.bottom + 16.0,
+    //           right: 0,
+    //           child: FloatingActionButton(
+    //             onPressed: () async {
+    //               pushNamed(
+    //                 ref: ref,
+    //                 context: context,
+    //                 routeName: DiaryEditScreen.routeName,
+    //                 snackBarText: 'Diary added!',
+    //               );
+    //             },
+    //             child: const Icon(Icons.add),
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 
   showPopUp({
@@ -121,7 +342,7 @@ class DiaryScreen extends ConsumerWidget {
     );
   }
 
-  pushNamed({
+  editRoute({
     required WidgetRef ref,
     required BuildContext context,
     required String routeName,

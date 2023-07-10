@@ -20,3 +20,5 @@ const YOUTUBE_MUSIC_LOGO_COLOR = Color(0xFFfc0004);
 
 // Black Color
 const COMMON_BLACK = Color(0xFF232323);
+
+const BACKGROUND_BLACK = Color(0xFF0B0B0B);

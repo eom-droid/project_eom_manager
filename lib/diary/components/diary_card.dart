@@ -8,7 +8,7 @@ class DiaryCard extends StatelessWidget {
   final String? thumbnail;
   final List<String> hashtags;
   final String title;
-  final void Function(int)? onTrheeDotSelected;
+  final void Function(int)? onThreeDotSelected;
 
   const DiaryCard({
     Key? key,
@@ -16,19 +16,19 @@ class DiaryCard extends StatelessWidget {
     this.thumbnail,
     required this.hashtags,
     required this.title,
-    required this.onTrheeDotSelected,
+    required this.onThreeDotSelected,
   }) : super(key: key);
 
   factory DiaryCard.fromModel({
     required DiaryModel model,
-    required void Function(int)? onTrheeDotSelected,
+    required void Function(int)? onThreeDotSelected,
   }) {
     return DiaryCard(
       postDT: model.postDT,
       thumbnail: model.thumbnail,
       hashtags: model.hashtags,
       title: model.title,
-      onTrheeDotSelected: onTrheeDotSelected,
+      onThreeDotSelected: onThreeDotSelected,
     );
   }
 
@@ -56,7 +56,7 @@ class DiaryCard extends StatelessWidget {
                   const PopupMenuItem<int>(value: 1, child: Text('수정')),
                   const PopupMenuItem<int>(value: 2, child: Text('삭제')),
                 ],
-                onSelected: onTrheeDotSelected,
+                onSelected: onThreeDotSelected,
               )
             ],
           ),
