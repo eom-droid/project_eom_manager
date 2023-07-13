@@ -65,4 +65,4 @@ const paginationDefaultFetcgCount = 10;
 
 const youtubeRatio = 0.56;
 
-const homeBackgroundImageWidth = 1349.7;
+const homeBackgroundImageWidth = 1.599;

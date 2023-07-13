@@ -62,19 +62,19 @@ class MusicScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    Colors.transparent,
-                    BACKGROUND_BLACK.withOpacity(0.6),
-                    BACKGROUND_BLACK,
-                  ],
-                ),
-              ),
-            ),
+            // Container(
+            //   decoration: BoxDecoration(
+            //     gradient: LinearGradient(
+            //       begin: Alignment.topCenter,
+            //       end: Alignment.bottomRight,
+            //       colors: <Color>[
+            //         Colors.transparent,
+            //         BACKGROUND_BLACK.withOpacity(0.6),
+            //         BACKGROUND_BLACK,
+            //       ],
+            //     ),
+            //   ),
+            // ),
             Positioned(
               top: MediaQuery.of(context).padding.top + 60,
               left: 16,

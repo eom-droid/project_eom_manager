@@ -47,7 +47,9 @@ class _BackgroundImageState extends State<BackgroundImage>
     vsync: this,
     value: 0.0,
     lowerBound: 0.0,
-    upperBound: homeBackgroundImageWidth - MediaQuery.of(context).size.width,
+    upperBound:
+        (homeBackgroundImageWidth * MediaQuery.of(context).size.height) -
+            (MediaQuery.of(context).size.width),
   )..repeat(reverse: true);
 
   @override
@@ -64,13 +66,14 @@ class _BackgroundImageState extends State<BackgroundImage>
       builder: ((context, child) {
         return Positioned(
           left: -_animationController.value,
-          child: Image.asset(
-            "asset/imgs/home_background.png",
-            height: MediaQuery.of(context).size.height,
-            fit: BoxFit.scaleDown,
-          ),
+          child: child!,
         );
       }),
+      child: Image.asset(
+        "asset/imgs/home_background.png",
+        height: MediaQuery.of(context).size.height,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }
@@ -81,7 +84,7 @@ class BackgroundFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFD9D9D9).withOpacity(0.05),
+      color: const Color(0xFFD9D9D9).withOpacity(0.1),
     );
   }
 }
@@ -220,17 +223,25 @@ class _FrontImagesRender extends StatelessWidget {
             ),
           ),
           // 10. 우측하단 스티커
-          const Positioned(
-            bottom: 250,
-            right: 0,
-            child: Text(
-              "🫡\n🫡\n🫡",
-              style: TextStyle(
-                fontSize: 30.0,
-                height: 1.01,
-              ),
-            ),
-          ),
+          Positioned(
+              bottom: 250,
+              right: 0,
+              child: Column(
+                children: [
+                  Image.asset(
+                    "asset/imgs/home_9_salute_emoji.png",
+                    width: 25,
+                  ),
+                  Image.asset(
+                    "asset/imgs/home_9_salute_emoji.png",
+                    width: 25,
+                  ),
+                  Image.asset(
+                    "asset/imgs/home_9_salute_emoji.png",
+                    width: 25,
+                  ),
+                ],
+              )),
           // 11. 우측하단 Penny board
           Positioned(
             bottom: 150,

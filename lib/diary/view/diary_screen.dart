@@ -82,7 +82,7 @@ class DiaryScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              'PlayList',
+              'Diary',
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'sabreshark',
@@ -100,7 +100,7 @@ class DiaryScreen extends ConsumerWidget {
                   alignment: Alignment.bottomLeft,
                   fit: BoxFit.cover,
                   image: AssetImage(
-                    "asset/imgs/music/appbar_background.jpg",
+                    "asset/imgs/diary/appbar_background.jpg",
                   ),
                 ),
                 borderRadius: BorderRadius.only(
@@ -109,19 +109,19 @@ class DiaryScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    Colors.transparent,
-                    BACKGROUND_BLACK.withOpacity(0.6),
-                    BACKGROUND_BLACK,
-                  ],
-                ),
-              ),
-            ),
+            // Container(
+            //   decoration: BoxDecoration(
+            //     gradient: LinearGradient(
+            //       begin: Alignment.topCenter,
+            //       end: Alignment.bottomRight,
+            //       colors: <Color>[
+            //         Colors.transparent,
+            //         BACKGROUND_BLACK.withOpacity(0.6),
+            //         BACKGROUND_BLACK,
+            //       ],
+            //     ),
+            //   ),
+            // ),
             Positioned(
               top: MediaQuery.of(context).padding.top + 60,
               left: 16,
@@ -129,7 +129,7 @@ class DiaryScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '가끔 먹어야 맛있는',
+                    '뛰뛰',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24.0,
@@ -137,30 +137,14 @@ class DiaryScreen extends ConsumerWidget {
                       height: 1.5,
                     ),
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        '감자알칩',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32.0,
-                          fontWeight: FontWeight.bold,
-                          height: 1.5,
-                        ),
-                      ),
-                      SizedBox(width: 8.0),
-                      Text(
-                        '같은',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '빵빵',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32.0,
+                      fontWeight: FontWeight.bold,
+                      height: 1.5,
+                    ),
                   ),
                 ],
               ),
@@ -201,29 +185,20 @@ class DiaryScreen extends ConsumerWidget {
               );
             }
 
-            return Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
+            return Padding(
+              padding: const EdgeInsets.only(
+                top: 32.0,
               ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 32.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                  ),
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.8),
-                        blurRadius: 1,
-                        spreadRadius: 3,
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: DiaryCard.fromModel(
-                    model: musicList[index],
-                    onThreeDotSelected: (int? value) async {},
-                  ),
+                child: DiaryCard.fromModel(
+                  model: musicList[index],
+                  onThreeDotSelected: (int? value) async {},
                 ),
               ),
             );

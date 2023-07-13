@@ -48,7 +48,7 @@ class MusicCard extends StatelessWidget {
       children: [
         Container(
           width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.width - 32,
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(
               Radius.circular(10),
@@ -80,10 +80,18 @@ class MusicCard extends StatelessWidget {
               child: Image.network(
                 albumCover,
                 fit: BoxFit.cover,
-                color: Colors.white.withOpacity(0.7),
-                colorBlendMode: BlendMode.modulate,
+                // color: Colors.white.withOpacity(0.7),
+                // colorBlendMode: BlendMode.modulate,
               ),
             ),
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.width - 32.0,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            color: Colors.black.withOpacity(0.5),
           ),
         ),
         // ClipRRect(

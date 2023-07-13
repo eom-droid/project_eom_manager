@@ -89,6 +89,7 @@ flutter:
     - asset/imgs/
     - asset/imgs/icons/
     - asset/imgs/music/
+    - asset/imgs/diary/
   fonts:
     - family : sabreshark
       fonts: 
