@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:manager/common/const/colors.dart';
 
 class DefaultLayout extends StatelessWidget {
   final Color? backgroundColor;
@@ -40,7 +41,7 @@ class DefaultLayout extends StatelessWidget {
     } else {
       return AppBar(
         actions: appBarActions,
-        backgroundColor: Colors.white,
+        backgroundColor: BACKGROUND_BLACK,
         // 앞으로 튀어나온 효과
         elevation: 0,
         title: Text(
@@ -50,7 +51,7 @@ class DefaultLayout extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        foregroundColor: Colors.black,
+        foregroundColor: Colors.white,
       );
     }
   }

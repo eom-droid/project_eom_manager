@@ -6,14 +6,18 @@ import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/common/model/pop_data_model.dart';
+import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/components/diary_card.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
+import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_edit_screen.dart';
+import 'package:video_player/video_player.dart';
 
 class DiaryScreen extends ConsumerWidget {
   static String get routeName => 'diary';
   DiaryScreen({super.key});
   final ScrollController _controller = ScrollController();
+  Map<String, VideoPlayerController>? vidControllers;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +42,7 @@ class DiaryScreen extends ConsumerWidget {
                   controller: _controller,
                   slivers: [
                     _renderAppBar(context),
-                    _renderMusicList(cp),
+                    _renderDiaryList(cp, ref),
                   ],
                 );
               },
@@ -129,7 +133,7 @@ class DiaryScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '뛰뛰',
+                    '옆에 한자리 남았어',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24.0,
@@ -138,7 +142,7 @@ class DiaryScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '빵빵',
+                    '뛰뛰빵빵',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 32.0,
@@ -155,17 +159,33 @@ class DiaryScreen extends ConsumerWidget {
     );
   }
 
-  SliverPadding _renderMusicList(
+  SliverPadding _renderDiaryList(
     CursorPagination cp,
+    WidgetRef ref,
   ) {
-    final musicList = cp.data;
+    final diaryList = cp.data;
+    if (vidControllers == null) {
+      vidControllers = {};
+      for (var element in diaryList) {
+        if (DataUtils.isVidFile(element.thumbnail!)) {
+          vidControllers![element.id] = VideoPlayerController.network(
+            element.thumbnail!,
+          );
+        }
+      }
+    }
+
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-      ),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      sliver: SliverList.separated(
+          itemCount: cp.data.length + 1,
+          separatorBuilder: (context, index) => const Padding(
+                padding: EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                child: Divider(
+                  color: Colors.grey,
+                ),
+              ),
+          itemBuilder: (context, index) {
             if (index == cp.data.length) {
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -187,25 +207,73 @@ class DiaryScreen extends ConsumerWidget {
 
             return Padding(
               padding: const EdgeInsets.only(
-                top: 32.0,
+                top: 16.0,
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      // color: const Color(0xFFD9D9D9).withOpacity(0.3),
+                      color: Colors.black.withOpacity(0.7),
+                      blurRadius: 3.0,
+                      spreadRadius: 1,
+                    ),
+                  ],
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                child: DiaryCard.fromModel(
-                  model: musicList[index],
-                  onThreeDotSelected: (int? value) async {},
+                child: InkWell(
+                  key: ValueKey(diaryList[index].id),
+                  onTap: () async {
+                    context.pushNamed(
+                      DiaryDetailScreen.routeName,
+                      pathParameters: {'rid': diaryList[index].id},
+                    );
+                  },
+                  child: DiaryCard.fromModel(
+                    model: diaryList[index],
+                    onThreeDotSelected: (int? value) async {
+                      if (value == 1) {
+                        editRoute(
+                          ref: ref,
+                          context: context,
+                          routeName: DiaryEditScreen.routeName,
+                          snackBarText: 'Diary updated!',
+                          id: diaryList[index].id,
+                        );
+                      } else if (value == 2) {
+                        showPopUp(
+                          context: context,
+                          onConfirm: () async {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return const AlertDialog(
+                                  title: Text('삭제중입니다.'),
+                                  content: LinearProgressIndicator(),
+                                );
+                              },
+                            );
+                            await ref
+                                .read(diaryProvider.notifier)
+                                .deleteDiary(id: diaryList[index].id);
+
+                            // 위에서 다이얼로그를 하나 더 열기때문에
+                            // pop을 하나더 진행함
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          },
+                          onCancel: () {
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      }
+                    },
+                  ),
                 ),
               ),
             );
-          },
-          childCount: musicList.length + 1,
-        ),
-      ),
+          }),
     );
 
     // return Scaffold(

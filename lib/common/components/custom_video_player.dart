@@ -4,17 +4,19 @@ import 'package:video_player/video_player.dart';
 
 class CustomVideoPlayer extends StatefulWidget {
   final VideoPlayerController videoController;
+  final bool displayBottomSlider;
 
   const CustomVideoPlayer({
     required this.videoController,
+    this.displayBottomSlider = true,
     Key? key,
   }) : super(key: key);
 
   @override
-  _CustomVideoPlayerState createState() => _CustomVideoPlayerState();
+  CustomVideoPlayerState createState() => CustomVideoPlayerState();
 }
 
-class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
+class CustomVideoPlayerState extends State<CustomVideoPlayer> {
   Duration currentPosition = const Duration();
 
   @override
@@ -26,12 +28,14 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   @override
   void dispose() {
     widget.videoController.removeListener(updateSlider);
-
     super.dispose();
   }
 
-  initializeController() async {
+  initializeController() {
     updateSlider();
+    if (!widget.videoController.value.isInitialized) {
+      widget.videoController.initialize().then((value) => setState(() {}));
+    }
 
     widget.videoController.addListener(updateSlider);
   }
@@ -45,6 +49,18 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.videoController.value.isInitialized) {
+      return SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.width,
+        child: const Center(
+          child: LinearProgressIndicator(
+            color: PRIMARY_COLOR,
+            backgroundColor: INPUT_BG_COLOR,
+          ),
+        ),
+      );
+    }
     return AspectRatio(
       aspectRatio: widget.videoController.value.aspectRatio,
       child: Stack(
@@ -56,11 +72,12 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
             onTap: onPlayPressed,
             isPlaying: widget.videoController.value.isPlaying,
           ),
-          _SliderBottom(
-            currentPosition: currentPosition,
-            maxPosition: widget.videoController.value.duration,
-            onSliderChanged: onSliderChanged,
-          ),
+          if (widget.displayBottomSlider)
+            _SliderBottom(
+              currentPosition: currentPosition,
+              maxPosition: widget.videoController.value.duration,
+              onSliderChanged: onSliderChanged,
+            ),
         ],
       ),
     );

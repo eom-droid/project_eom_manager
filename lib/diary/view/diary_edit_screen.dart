@@ -171,6 +171,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     }
 
     return DefaultLayout(
+      backgroundColor: BACKGROUND_BLACK,
       title: widget.id == NEW_ID ? 'Diary Add' : 'Diary Edit',
       isFullScreen: true,
       appBarActions: [
@@ -308,19 +309,24 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
           return Image(
             image: imageProvider,
-            height: 300.0,
+            height: MediaQuery.of(context).size.width,
             width: double.infinity,
             fit: BoxFit.cover,
           );
         } else if (controller is VideoPlayerController) {
-          return CustomVideoPlayer(
-            videoController: controller,
+          return SizedBox(
+            height: MediaQuery.of(context).size.width,
+            child: Center(
+              child: CustomVideoPlayer(
+                videoController: controller,
+              ),
+            ),
           );
         }
       }
     }
     return Container(
-      height: 300.0,
+      height: MediaQuery.of(context).size.width,
       color: Colors.grey[300],
       child: const Center(
         child: Text('썸네일을 선택해 주세요'),
@@ -459,7 +465,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       }
 
       // 썸네일
-      String? thumbnail;
+      String thumbnail = '';
       if (thumbnailIndex != -1) {
         if (contents[thumbnailIndex].controller is TextEditingController) {
           var controller =
@@ -541,6 +547,13 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       );
       return false;
     }
+    if (thumbnailIndex == -1) {
+      FlutterUtils.showSnackBar(
+        context: context,
+        content: '썸네일을 선택해주세요',
+      );
+      return false;
+    }
     for (int i = 0; i < contents.length; i++) {
       if (contents[i].contentType == null) {
         FlutterUtils.showSnackBar(
@@ -611,8 +624,7 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('#${widget.index + 1}'),
-                if (widget.contentInput.contentType == DiaryContentType.img ||
-                    widget.contentInput.contentType == DiaryContentType.vid)
+                if (widget.contentInput.contentType == DiaryContentType.img)
                   Row(
                     children: [
                       const Text('썸네일 : '),
@@ -620,9 +632,6 @@ class __ContentInputWidgetState extends State<_ContentInputWidget> {
                       CustomAnimatedSwitch(
                         value: widget.isThumbnail,
                         onChanged: (bool value) {
-                          // setState(() {
-                          //   thumbnailIndex = value ? index : -1;
-                          // });
                           widget.onThumbnailChanged(widget.index, value);
                         },
                       )

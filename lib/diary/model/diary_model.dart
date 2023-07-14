@@ -32,9 +32,9 @@ class DiaryModel implements IModelWithPostDTAndPostDateInd {
   final int postDateInd;
   // thumbnail : 썸네일 -> S3에 저장된 이미지, vid 의 경로
   @JsonKey(
-    fromJson: DataUtils.pathToUrlNullable,
+    fromJson: DataUtils.pathToUrl,
   )
-  final String? thumbnail;
+  final String thumbnail;
   @JsonKey(
     fromJson: DataUtils.stringToDiaryCategory,
     toJson: DataUtils.diaryCategoryToString,

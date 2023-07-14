@@ -154,28 +154,23 @@ class MusicScreen extends ConsumerWidget {
               );
             }
 
-            return Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
+            return Padding(
+              padding: const EdgeInsets.only(
+                top: 32.0,
               ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 32.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black,
+                      blurRadius: 5,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.8),
-                        blurRadius: 1,
-                        spreadRadius: 3,
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: MusicCard.fromModel(
-                    model: musicList[index],
-                  ),
+                child: MusicCard.fromModel(
+                  model: musicList[index],
                 ),
               ),
             );

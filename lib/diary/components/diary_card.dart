@@ -5,16 +5,18 @@ import 'package:manager/common/const/colors.dart';
 import 'package:manager/diary/model/diary_model.dart';
 
 class DiaryCard extends StatelessWidget {
+  final String id;
   final DateTime postDT;
-  final String? thumbnail;
+  final String thumbnail;
   final List<String> hashtags;
   final String title;
   final void Function(int)? onThreeDotSelected;
 
   const DiaryCard({
     Key? key,
+    required this.id,
     required this.postDT,
-    this.thumbnail,
+    required this.thumbnail,
     required this.hashtags,
     required this.title,
     required this.onThreeDotSelected,
@@ -25,6 +27,7 @@ class DiaryCard extends StatelessWidget {
     required void Function(int)? onThreeDotSelected,
   }) {
     return DiaryCard(
+      id: model.id,
       postDT: model.postDT,
       thumbnail: model.thumbnail,
       hashtags: model.hashtags,
@@ -36,13 +39,12 @@ class DiaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String postDate = '${postDT.year}년 ${postDT.month}월 ${postDT.day}일';
-    if (thumbnail == null) {
-      return const SizedBox();
-    }
+
     return Stack(
       children: [
-        if (thumbnail != null)
-          ClipRRect(
+        Hero(
+          tag: 'thumbnail$id',
+          child: ClipRRect(
             borderRadius: const BorderRadius.all(
               Radius.circular(10),
             ),
@@ -52,36 +54,24 @@ class DiaryCard extends StatelessWidget {
                 sigmaY: 2.0,
               ),
               child: Image.network(
-                thumbnail!,
+                thumbnail,
                 fit: BoxFit.cover,
                 height: MediaQuery.of(context).size.width - 32.0,
                 width: double.infinity,
-                // frame jank가 너무 심함
-                // color: const Color(0xFFEDEDED).withOpacity(0.5),
-                // colorBlendMode: BlendMode.modulate,
+                key: UniqueKey(),
               ),
             ),
           ),
-        // ClipRRect(
-        //   borderRadius: BorderRadius.circular(10.0),
-        //   child: Image.network(
-        //     thumbnail!,
-        //     fit: BoxFit.cover,
+        ),
+        // if (thumbnail == null)
+        //   Container(
+        //     decoration: BoxDecoration(
+        //       borderRadius: BorderRadius.circular(10.0),
+        //       color: Colors.blueGrey,
+        //     ),
+        //     width: double.infinity,
         //     height: MediaQuery.of(context).size.width - 32.0,
-        //     color: Colors.white.withOpacity(0.5),
-        //     colorBlendMode: BlendMode.modulate,
         //   ),
-        // ),
-        if (thumbnail == null)
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
-              color: Colors.blueGrey,
-            ),
-            width: double.infinity,
-            height: MediaQuery.of(context).size.width - 32.0,
-          ),
-
         Container(
           width: double.infinity,
           height: MediaQuery.of(context).size.width - 32.0,
@@ -122,7 +112,7 @@ class DiaryCard extends StatelessWidget {
                   postDate,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16.0,
+                    fontSize: 14.0,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -140,13 +130,14 @@ class DiaryCard extends StatelessWidget {
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         // hashtag prefix for #
                         hashtags.map((String e) => '#$e').join(' '),
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16.0,
+                          fontSize: 14.0,
                         ),
                       ),
                     ],
@@ -156,6 +147,21 @@ class DiaryCard extends StatelessWidget {
             ],
           ),
         ),
+        Positioned(
+          top: 8,
+          right: 0,
+          child: PopupMenuButton<int>(
+            icon: const Icon(
+              Icons.more_vert_outlined,
+              color: Colors.white,
+            ),
+            itemBuilder: (BuildContext context) => <PopupMenuItem<int>>[
+              const PopupMenuItem<int>(value: 1, child: Text('수정')),
+              const PopupMenuItem<int>(value: 2, child: Text('삭제')),
+            ],
+            onSelected: onThreeDotSelected,
+          ),
+        )
       ],
     );
 

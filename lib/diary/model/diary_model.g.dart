@@ -15,7 +15,7 @@ DiaryModel _$DiaryModelFromJson(Map<String, dynamic> json) => DiaryModel(
           (json['hashtags'] as List<dynamic>).map((e) => e as String).toList(),
       postDT: DataUtils.toLocalTimeZone(json['postDT'] as String),
       postDateInd: json['postDateInd'] as int,
-      thumbnail: DataUtils.pathToUrlNullable(json['thumbnail'] as String?),
+      thumbnail: DataUtils.pathToUrl(json['thumbnail'] as String),
       category: DataUtils.stringToDiaryCategory(json['category'] as String),
       isShown: json['isShown'] as bool,
     );

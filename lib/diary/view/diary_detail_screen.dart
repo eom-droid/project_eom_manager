@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:manager/common/components/thumbnail_video_player.dart';
+import 'package:manager/common/components/custom_video_player.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
 import 'package:manager/diary/provider/diary_provider.dart';
+import 'package:marquee/marquee.dart';
+import 'package:video_player/video_player.dart';
 
 class DiaryDetailScreen extends ConsumerStatefulWidget {
   static String get routeName => 'diaryDetail';
@@ -26,6 +27,7 @@ class DiaryDetailScreen extends ConsumerStatefulWidget {
 class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   final ScrollController scrollController = ScrollController();
+  Map<String, VideoPlayerController> vidControllers = {};
 
   @override
   void initState() {
@@ -34,11 +36,20 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   }
 
   @override
+  void dispose() {
+    vidControllers.forEach((key, value) {
+      value.dispose();
+    });
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(diaryDetailProvider(widget.id));
 
     if (state == null) {
       return const DefaultLayout(
+        backgroundColor: BACKGROUND_BLACK,
         child: Center(
           child: CircularProgressIndicator(),
         ),
@@ -46,6 +57,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
     }
 
     return Scaffold(
+      backgroundColor: BACKGROUND_BLACK,
       body: SafeArea(
         top: false,
         child: CustomScrollView(
@@ -63,65 +75,70 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
   SliverAppBar _renderThumbnail({
     required DiaryModel model,
   }) {
-    final height = MediaQuery.of(context).size.width * 1.3;
-    final imageHeight = height + MediaQuery.of(context).viewPadding.top;
+    final height =
+        MediaQuery.of(context).size.width - MediaQuery.of(context).padding.top;
     return SliverAppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: BACKGROUND_BLACK,
       // elevation: 0,
       expandedHeight: height,
+      pinned: true,
 
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           children: [
-            if (model.thumbnail != null)
-              if (DataUtils.isImgFile(model.thumbnail!))
-                Center(
-                  child: Image.network(
-                    model.thumbnail!,
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width,
-                    height: imageHeight,
-                  ),
+            Hero(
+              tag: 'thumbnail${model.id}',
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(10),
                 ),
-            if (DataUtils.isVidFile(model.thumbnail!))
-              Center(
-                child: ThumbnailVideoPalyer(
-                  thumbnail: model.thumbnail!,
+                child: Image.network(
+                  model.thumbnail,
+                  fit: BoxFit.cover,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.width,
                 ),
               ),
-            if (model.thumbnail == null)
-              Container(
-                color: Colors.grey,
-                width: MediaQuery.of(context).size.width,
-                height: imageHeight,
-              ),
+            ),
             Positioned(
               bottom: 32.0,
               right: 0.0,
               child: Container(
-                color: BODY_TEXT_COLOR,
-                child: Row(
-                  children: model.hashtags
-                      .map<Padding>(
-                        (e) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: SizedBox(
-                            child: Text(
-                              '#$e',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
+                decoration: const BoxDecoration(
+                  color: BODY_TEXT_COLOR,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    bottomLeft: Radius.circular(10),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4.0,
+                  ),
+                  child: Row(
+                    children: model.hashtags
+                        .map<Padding>(
+                          (e) => Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 12.0),
+                            child: SizedBox(
+                              child: Text(
+                                '#$e',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14.0,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      )
-                      .toList(),
+                        )
+                        .toList(),
+                  ),
                 ),
               ),
             ),
             Container(
-              height: 200,
+              height: MediaQuery.of(context).size.width / 2,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -145,45 +162,58 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: 16.0,
-            ),
-            Text(
-              DateFormat("yy년 M월 d일 HH:mm").format(model.postDT),
-              // textAlign: TextAlign.left,
-              style: const TextStyle(
-                fontSize: 16.0,
+        child: SizedBox(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                height: 32.0,
               ),
-            ),
-            const SizedBox(
-              height: 16.0,
-            ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Text(
-                '날씨 : ${model.weather}',
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontSize: 16.0,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateFormat("yy년 M월 d일 HH:mm").format(model.postDT),
+                    // textAlign: TextAlign.left,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                      color: BODY_TEXT_COLOR,
+                    ),
+                  ),
+                  Text(
+                    '날씨 : ${model.weather}',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                      color: BODY_TEXT_COLOR,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 48.0,
+              ),
+              SizedBox(
+                height: 30.0,
+                child: Marquee(
+                  text: model.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 24.0,
+                  ),
+                  blankSpace: 20.0,
+                  scrollAxis: Axis.horizontal,
+                  startAfter: const Duration(seconds: 1),
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  pauseAfterRound: const Duration(seconds: 1),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 16.0,
-            ),
-            Center(
-              child: Text(
-                model.title,
-                style: const TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                ),
+              const SizedBox(
+                height: 48.0,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -204,6 +234,9 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
         } else if (e == DiaryContentType.img) {
           return model.imgs[imgIndex++];
         } else if (e == DiaryContentType.vid) {
+          vidControllers[model.vids[vidIndex]] =
+              VideoPlayerController.network(model.vids[vidIndex]);
+
           return model.vids[vidIndex++];
         }
         return null;
@@ -217,33 +250,41 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+      padding: const EdgeInsets.only(top: 16.0, bottom: 24.0),
       sliver: SliverList.separated(
         itemCount: content.length,
         separatorBuilder: (context, index) {
           return const SizedBox(
-            height: 16.0,
+            height: 32.0,
           );
         },
         itemBuilder: (context, index) {
           final contentType = model.contentOrder[index];
 
           if (contentType == DiaryContentType.txt) {
-            return Text(
-              content[index]!,
-              style: const TextStyle(
-                fontSize: 14.0,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                content[index]!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14.0,
+                  color: INPUT_BORDER_COLOR,
+                  height: 1.7,
+                ),
               ),
             );
           } else if (contentType == DiaryContentType.img) {
-            return Image.network(
-              content[index]!,
-              fit: BoxFit.cover,
+            return ClipRRect(
+              child: Image.network(
+                content[index]!,
+                fit: BoxFit.cover,
+              ),
             );
           } else if (contentType == DiaryContentType.vid) {
-            return SizedBox(
-              height: 300,
-              child: Text('$vidIndex'),
+            return CustomVideoPlayer(
+              videoController: vidControllers[content[index]!]!,
+              displayBottomSlider: false,
             );
           }
           return null;
