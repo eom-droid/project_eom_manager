@@ -1,9 +1,6 @@
-// import 'package:actual/common/const/data.dart';
-// import 'package:actual/common/secure_storage/secure_storage.dart';
-// import 'package:actual/user/provider/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:manager/common/const/data.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio();
@@ -28,7 +25,8 @@ class CustomInterceptor extends Interceptor {
     if (options.headers['accessToken'] == 'true') {
       // 헤더 삭제
       options.headers.remove('accessToken');
-      const token = accessToken;
+
+      String token = dotenv.env['AUTH_TOKEN']!;
 
       // 임시 토큰으로 대체
       options.headers.addAll({'authorization': 'Bearer $token'});

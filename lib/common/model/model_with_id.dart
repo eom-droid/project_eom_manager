@@ -5,10 +5,8 @@ abstract class IModelWithId extends IModelPagination {
   IModelWithId({required this.id});
 }
 
-abstract class IModelWithPostDTAndPostDateInd extends IModelPagination {
+abstract class IModelWithPostDT extends IModelPagination {
   final DateTime postDT;
-  final int postDateInd;
 
-  IModelWithPostDTAndPostDateInd(
-      {required this.postDT, required this.postDateInd});
+  IModelWithPostDT({required this.postDT});
 }

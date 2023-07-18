@@ -63,12 +63,38 @@ class _DiaryRepository implements DiaryRepository {
     )
             .compose(
               _dio.options,
-              '/${id}',
+              '/${id}/detail',
               queryParameters: queryParameters,
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = DiaryDetailModel.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<bool> checkDiaryPostDTExist(
+      {searchParam = const SearchParamsDiary()}) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.addAll(searchParam?.toJson() ?? <String, dynamic>{});
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{r'accessToken': 'true'};
+    _headers.removeWhere((k, v) => v == null);
+    final Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<bool>(_setStreamType<bool>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/search',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = _result.data!;
     return value;
   }
 

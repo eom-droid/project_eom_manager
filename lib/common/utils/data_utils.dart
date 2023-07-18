@@ -40,10 +40,6 @@ class DataUtils {
     // return value.toLocal();
   }
 
-  static DateTime dateOnly(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
-  }
-
   static List<DiaryContentType> listStringToListDiaryContentType(
       List<dynamic> value) {
     return value.map((e) => DiaryContentType.getByCode(e)).toList();

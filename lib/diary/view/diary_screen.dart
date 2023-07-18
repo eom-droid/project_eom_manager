@@ -13,6 +13,7 @@ import 'package:manager/diary/view/diary_detail_screen.dart';
 import 'package:manager/diary/view/diary_edit_screen.dart';
 import 'package:video_player/video_player.dart';
 
+// ignore: must_be_immutable
 class DiaryScreen extends ConsumerWidget {
   static String get routeName => 'diary';
   DiaryScreen({super.key});

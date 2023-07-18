@@ -173,10 +173,9 @@ class PaginationProvider<
           count: fetchCount,
         ) as P;
       }
-      final value = pState as IModelWithPostDTAndPostDateInd;
+      final value = pState as IModelWithPostDT;
       return PaginationParamsDiary(
         postDT: fetchMore ? value.postDT : null,
-        postDateInd: fetchMore ? value.postDateInd : null,
         count: fetchCount,
       ) as P;
     } else {

@@ -6,6 +6,7 @@ import 'package:manager/common/provider/pagination_provider.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
 import 'package:manager/diary/model/pagination_params_diary.dart';
+import 'package:manager/diary/model/search_params_diary.dart';
 import 'package:manager/diary/repository/diary_repository.dart';
 
 final diaryDetailProvider = Provider.family<DiaryModel?, String>((ref, id) {
@@ -96,6 +97,17 @@ class DiaryStateNotifier extends PaginationProvider<DiaryModel, DiaryRepository,
     await super.repository.addDiary(
           diary: diary.toJson(),
           file: uploadFiles,
+        );
+  }
+
+  Future<bool> checkDiaryPostDTExist({
+    required DateTime postDT,
+  }) async {
+    SearchParamsDiary searchParamsDiary = SearchParamsDiary(
+      postDT: postDT,
+    );
+    return await super.repository.checkDiaryPostDTExist(
+          searchParam: searchParamsDiary,
         );
   }
 

@@ -6,7 +6,7 @@ import 'package:manager/common/utils/data_utils.dart';
 part 'diary_model.g.dart';
 
 @JsonSerializable()
-class DiaryModel implements IModelWithPostDTAndPostDateInd {
+class DiaryModel implements IModelWithPostDT {
   // id : 유일 아이디 값
   @JsonKey(name: '_id')
   final String id;
@@ -27,9 +27,6 @@ class DiaryModel implements IModelWithPostDTAndPostDateInd {
     fromJson: DataUtils.toLocalTimeZone,
   )
   final DateTime postDT;
-  // postDateInd : 같은 날짜의 다이어리 리스트에서의 index
-  @override
-  final int postDateInd;
   // thumbnail : 썸네일 -> S3에 저장된 이미지, vid 의 경로
   @JsonKey(
     fromJson: DataUtils.pathToUrl,
@@ -56,7 +53,6 @@ class DiaryModel implements IModelWithPostDTAndPostDateInd {
     required this.weather,
     required this.hashtags,
     required this.postDT,
-    required this.postDateInd,
     required this.thumbnail,
     required this.category,
     required this.isShown,
@@ -68,7 +64,6 @@ class DiaryModel implements IModelWithPostDTAndPostDateInd {
         writer: '',
         weather: '',
         hashtags: [],
-        postDateInd: -1,
         postDT: DateTime.now(),
         thumbnail: '',
         category: DiaryCategory.daily,

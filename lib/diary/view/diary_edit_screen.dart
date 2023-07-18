@@ -56,13 +56,12 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   bool isInitialized = false;
 
   String title = '';
-  DateTime postDT = DataUtils.dateOnly(DateTime.now());
+  DateTime postDT = DateTime.now();
   String weather = '';
   List<String> hashtags = [];
   List<_ContentInput> contents = [];
   DiaryCategory category = DiaryCategory.daily;
   int thumbnailIndex = -1;
-  int postDateInd = -1;
 
   @override
   void initState() {
@@ -96,7 +95,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     weather = state.weather;
     hashtags = state.hashtags;
     category = state.category;
-    postDateInd = state.postDateInd;
 
     contents = state.contentOrder
         .map<_ContentInput>(
@@ -136,19 +134,17 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
           break;
       }
     }
-    thumbnailIndex = state.thumbnail == null
-        ? -1
-        : contents.indexWhere((element) {
-            if (element.controller is TextEditingController) {
-              var controller = element.controller as TextEditingController;
-              return controller.text == state.thumbnail;
-            } else {
-              // 이부분은 조금있다가 확인해봐야됨
-              // 업로드까지 진행해보고 썸네일에서 잘 나오는지
-              var controller = element.controller as VideoPlayerController;
-              return controller.dataSource == state.thumbnail;
-            }
-          });
+    thumbnailIndex = contents.indexWhere((element) {
+      if (element.controller is TextEditingController) {
+        var controller = element.controller as TextEditingController;
+        return controller.text == state.thumbnail;
+      } else {
+        // 이부분은 조금있다가 확인해봐야됨
+        // 업로드까지 진행해보고 썸네일에서 잘 나오는지
+        var controller = element.controller as VideoPlayerController;
+        return controller.dataSource == state.thumbnail;
+      }
+    });
     setState(() {
       isInitialized = true;
     });
@@ -260,7 +256,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: _PostDate(
+                        child: _PostDT(
                           initValue: postDT,
                           onChanged: (DateTime value) {
                             postDT = value;
@@ -402,7 +398,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
     FocusScope.of(context).requestFocus(FocusNode());
     FullLoadingScreen(context).startLoading();
-    bool validateResult = validate();
+    bool validateResult = await validate();
     if (validateResult) {
       formKey.currentState!.save();
       final List<String> txts = [];
@@ -494,7 +490,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         weather: weather,
         hashtags: hashtags,
         postDT: postDT,
-        postDateInd: postDateInd,
         thumbnail: thumbnail,
         category: category,
         isShown: true,
@@ -521,7 +516,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     return validateResult;
   }
 
-  bool validate() {
+  Future<bool> validate() async {
     if (formKey.currentContext == null) {
       FlutterUtils.showSnackBar(
         context: context,
@@ -581,6 +576,16 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
         return false;
       }
+    }
+
+    if (await ref.read(diaryProvider.notifier).checkDiaryPostDTExist(
+          postDT: postDT,
+        )) {
+      FlutterUtils.showSnackBar(
+        context: context,
+        content: '해당 날짜/시간에 이미 다이어리가 존재합니다',
+      );
+      return false;
     }
     return true;
   }
@@ -732,7 +737,6 @@ class _CategoryState extends State<_Category> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     category = widget.initValue;
   }
@@ -816,29 +820,29 @@ class _Title extends StatelessWidget {
   }
 }
 
-class _PostDate extends StatefulWidget {
+class _PostDT extends StatefulWidget {
   final DateTime initValue;
   final ValueChanged<DateTime> onChanged;
 
-  const _PostDate({
+  const _PostDT({
     required this.initValue,
     required this.onChanged,
   });
 
   @override
-  State<_PostDate> createState() => _PostDateState();
+  State<_PostDT> createState() => _PostDTState();
 }
 
-class _PostDateState extends State<_PostDate> {
+class _PostDTState extends State<_PostDT> {
   late DateTime postDate;
   TextEditingController postDateTextController = TextEditingController();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     postDate = widget.initValue;
-    postDateTextController.text = DateFormat('yyyy-MM-dd').format(postDate);
+    postDateTextController.text =
+        DateFormat('yyyy-MM-dd HH:mm').format(postDate);
   }
 
   @override
@@ -860,14 +864,43 @@ class _PostDateState extends State<_PostDate> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(postDate),
+    );
+
     if (selectedDate != null) {
-      setState(() {
-        postDateTextController.text =
-            DateFormat('yyyy-MM-dd').format(selectedDate);
-        postDate = selectedDate;
-      });
-      widget.onChanged(selectedDate);
+      postDate = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        postDate.hour,
+        postDate.minute,
+      );
     }
+    if (selectedTime != null) {
+      postDate = DateTime(
+        postDate.year,
+        postDate.month,
+        postDate.day,
+        selectedTime.hour,
+        selectedTime.minute,
+      );
+    }
+    setState(() {
+      postDateTextController.text =
+          DateFormat('yyyy-MM-dd HH:mm').format(postDate);
+    });
+    widget.onChanged(postDate);
+    // if (selectedTime != null) {
+
+    //   setState(() {
+    //     postDateTextController.text =
+    //         DateFormat('yyyy-MM-dd').format(selectedDate);
+    //     postDate = selectedDate;
+    //   });
+    //   widget.onChanged(selectedDate);
+    // }
   }
 }
 
@@ -914,7 +947,6 @@ class _HashtagsState extends State<_Hashtags> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     hashtags = widget.initialValue;
   }

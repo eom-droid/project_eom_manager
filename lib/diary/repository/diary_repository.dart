@@ -11,6 +11,7 @@ import 'package:manager/common/repository/base_pagination_repository.dart';
 import 'package:manager/diary/model/diary_detail_model.dart';
 import 'package:manager/diary/model/diary_model.dart';
 import 'package:manager/diary/model/pagination_params_diary.dart';
+import 'package:manager/diary/model/search_params_diary.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'diary_repository.g.dart';
@@ -36,12 +37,20 @@ abstract class DiaryRepository
         PaginationParamsDiary? paginationParams = const PaginationParamsDiary(),
   });
 
-  @GET('/{id}')
+  @GET('/{id}/detail')
   @Headers({
     'accessToken': 'true',
   })
   Future<DiaryDetailModel> getDiaryDetail({
     @Path() required String id,
+  });
+
+  @GET('/search')
+  @Headers({
+    'accessToken': 'true',
+  })
+  Future<bool> checkDiaryPostDTExist({
+    @Queries() SearchParamsDiary? searchParam = const SearchParamsDiary(),
   });
 
   @POST('/')
