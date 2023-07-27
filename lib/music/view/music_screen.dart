@@ -124,59 +124,116 @@ class MusicScreen extends ConsumerWidget {
     );
   }
 
-  SliverPadding _renderMusicList(
-    CursorPagination cp,
-  ) {
-    final musicList = cp.data as List<MusicModel>;
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-      ),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index == cp.data.length) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 64.0,
-                ),
-                child: Center(
-                  child: cp is CursorPaginationFetchingMore
-                      ? const CircularProgressIndicator()
-                      : const Text(
-                          '마지막 입니다.',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-              );
-            }
+  // SliverPadding _renderMusicList(
+  //   CursorPagination cp,
+  // ) {
+  //   final musicList = cp.data as List<MusicModel>;
+  //   return SliverPadding(
+  //     padding: const EdgeInsets.symmetric(
+  //       horizontal: 16.0,
+  //     ),
+  //     sliver: SliverList(
+  //       delegate: SliverChildBuilderDelegate(
+  //         (context, index) {
+  //           if (index == cp.data.length) {
+  //             return Padding(
+  //               padding: const EdgeInsets.symmetric(
+  //                 horizontal: 16.0,
+  //                 vertical: 64.0,
+  //               ),
+  //               child: Center(
+  //                 child: cp is CursorPaginationFetchingMore
+  //                     ? const CircularProgressIndicator()
+  //                     : const Text(
+  //                         '마지막 입니다.',
+  //                         style: TextStyle(
+  //                           color: Colors.white,
+  //                         ),
+  //                       ),
+  //               ),
+  //             );
+  //           }
 
+  //           return Padding(
+  //             padding: const EdgeInsets.only(
+  //               top: 32.0,
+  //             ),
+  //             child: Container(
+  //               decoration: BoxDecoration(
+  //                 boxShadow: const [
+  //                   BoxShadow(
+  //                     color: Colors.black,
+  //                     blurRadius: 5,
+  //                     spreadRadius: 4,
+  //                   ),
+  //                 ],
+  //                 borderRadius: BorderRadius.circular(10),
+  //               ),
+  //               child: MusicCard.fromModel(
+  //                 model: musicList[index],
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //         childCount: musicList.length + 1,
+  //       ),
+  //     ),
+  //   );
+  // }
+  Widget _renderMusicList({
+    required BuildContext context,
+    required CursorPagination cp,
+  }) {
+    final musicList = cp.data as List<MusicModel>;
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      child: ListView.separated(
+        separatorBuilder: (context, index) => const SizedBox(height: 32.0),
+        itemBuilder: (context, index) {
+          if (index == cp.data.length) {
             return Padding(
-              padding: const EdgeInsets.only(
-                top: 32.0,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 64.0,
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black,
-                      blurRadius: 5,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: MusicCard.fromModel(
-                  model: musicList[index],
-                ),
+              child: Center(
+                child: cp is CursorPaginationFetchingMore
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        '마지막 입니다.',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             );
-          },
-          childCount: musicList.length + 1,
-        ),
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(
+              top: 32.0,
+              left: 16.0,
+              right: 16.0,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 5,
+                    spreadRadius: 4,
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: MusicCard.fromModel(
+                model: musicList[index],
+              ),
+            ),
+          );
+        },
+        itemCount: musicList.length + 1,
       ),
     );
   }
@@ -187,26 +244,28 @@ class MusicScreen extends ConsumerWidget {
       backgroundColor: BACKGROUND_BLACK,
       body: Stack(
         children: [
-          RefreshIndicator(
-            onRefresh: () async {
-              ref.read(musicProvider.notifier).paginate(forceRefetch: true);
-            },
-            child: PaginationListView(
-              provider: musicProvider,
-              itemBuilder: <MusicModel>(_, int index, model) {
-                return MusicCard.fromModel(
-                  model: model,
-                );
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxScrolled) => [
+              _renderAppBar(context),
+            ],
+            body: RefreshIndicator(
+              onRefresh: () async {
+                ref.read(musicProvider.notifier).paginate(forceRefetch: true);
               },
-              customList: (CursorPagination cp) {
-                return CustomScrollView(
-                  controller: _controller,
-                  slivers: [
-                    _renderAppBar(context),
-                    _renderMusicList(cp),
-                  ],
-                );
-              },
+              child: PaginationListView(
+                provider: musicProvider,
+                itemBuilder: <MusicModel>(_, int index, model) {
+                  return MusicCard.fromModel(
+                    model: model,
+                  );
+                },
+                customList: (CursorPagination cp) {
+                  return _renderMusicList(
+                    context: context,
+                    cp: cp,
+                  );
+                },
+              ),
             ),
           ),
           Positioned(
@@ -225,5 +284,48 @@ class MusicScreen extends ConsumerWidget {
         ],
       ),
     );
+    // return Scaffold(
+    //   backgroundColor: BACKGROUND_BLACK,
+    //   body: Stack(
+    //     children: [
+    //       RefreshIndicator(
+    //         onRefresh: () async {
+    //           ref.read(musicProvider.notifier).paginate(forceRefetch: true);
+    //         },
+    //         child: PaginationListView(
+    //           provider: musicProvider,
+    //           itemBuilder: <MusicModel>(_, int index, model) {
+    //             return MusicCard.fromModel(
+    //               model: model,
+    //             );
+    //           },
+    //           customList: (CursorPagination cp) {
+    //             return CustomScrollView(
+    //               controller: _controller,
+    //               slivers: [
+    //                 _renderAppBar(context),
+    //                 _renderMusicList(cp),
+    //               ],
+    //             );
+    //           },
+    //         ),
+    //       ),
+    //       // FloatingActionButton
+    //       Positioned(
+    //         bottom: MediaQuery.of(context).padding.bottom,
+    //         right: 20.0,
+    //         child: FloatingActionButton(
+    //           onPressed: () async {
+    //             context.pushNamed(
+    //               MusicEditScreen.routeName,
+    //               pathParameters: {'rid': NEW_ID},
+    //             );
+    //           },
+    //           child: const Icon(Icons.add),
+    //         ),
+    //       )
+    //     ],
+    //   ),
+    // );
   }
 }

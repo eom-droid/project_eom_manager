@@ -15,6 +15,7 @@ class _App extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 라우터 설정
     final router = ref.watch(goRouterProvider);
     return MaterialApp.router(
       theme: ThemeData(
