@@ -14,21 +14,14 @@ import 'package:manager/common/utils/flutter_utils.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/provider/music_provider.dart';
 
-class MusicEditScreen extends ConsumerStatefulWidget {
-  static String get routeName => 'musicEdit';
-
+class MusicEditScreen extends ConsumerWidget {
+  static String get routeName => "musicEdit";
   final String id;
-
-  const MusicEditScreen({
+  MusicEditScreen({
     super.key,
     required this.id,
   });
 
-  @override
-  ConsumerState<MusicEditScreen> createState() => _MusicEditScreenState();
-}
-
-class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
   final ScrollController scrollController = ScrollController();
 
   bool isFullScreen = false;
@@ -42,39 +35,57 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
 
   bool isSaving = false;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  // @override
+  // void initState() {
+  //   // TODO: implement initState
+  //   super.initState();
+  //   if(widget.id !=NEW_ID){
 
-    if (widget.id != NEW_ID) {
-      final model = ref.read(musicProvider.notifier).getMusicById(widget.id);
-      titleTextCon.text = model.title;
-      artisteTextCon.text = model.artiste;
-      albumCoverTextCon.text = model.albumCover;
-      reviewTextCon.text = model.review;
-      youtubeMusicIdTextCon.text = model.youtubeMusicId;
-      spotifyIdTextCon.text = model.spotifyId;
-    } else {
-      titleTextCon.text = '홍대충';
-      artisteTextCon.text = 'lobonabeat';
-      reviewTextCon.text = "홍대충이라는 노래는 홍대에서";
-      youtubeMusicIdTextCon.text =
-          "https://music.youtube.com/watch?v=N-YypFxDC_0&feature=share";
-      spotifyIdTextCon.text =
-          "https://open.spotify.com/track/1HL8Jveuh7tZnCqHzGyyzB?si=678dd1c98b50405b";
+  //   }
+
+  //   // if (widget.id != NEW_ID) {
+  //   //   final model = ref.read(musicProvider.notifier).getMusicById(widget.id);
+  //   //   titleTextCon.text = model.title;
+  //   //   artisteTextCon.text = model.artiste;
+  //   //   albumCoverTextCon.text = model.albumCover;
+  //   //   reviewTextCon.text = model.review;
+  //   //   youtubeMusicIdTextCon.text = model.youtubeMusicId;
+  //   //   spotifyIdTextCon.text = model.spotifyId;
+  //   // } else {
+  //   //   titleTextCon.text = '홍대충';
+  //   //   artisteTextCon.text = 'lobonabeat';
+  //   //   reviewTextCon.text = "홍대충이라는 노래는 홍대에서";
+  //   //   youtubeMusicIdTextCon.text =
+  //   //       "https://music.youtube.com/watch?v=N-YypFxDC_0&feature=share";
+  //   //   spotifyIdTextCon.text =
+  //   //       "https://open.spotify.com/track/1HL8Jveuh7tZnCqHzGyyzB?si=678dd1c98b50405b";
+  //   // }
+  // }
+
+  init(WidgetRef ref) {
+    final state = ref.watch(musicDetailProvider(id));
+    if (state != null) {
+      titleTextCon.text = state.title;
+      artisteTextCon.text = state.artiste;
+      albumCoverTextCon.text = state.albumCover;
+      reviewTextCon.text = state.review;
+      youtubeMusicIdTextCon.text = state.youtubeMusicId;
+      spotifyIdTextCon.text = state.spotifyId;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DefaultLayout(
-      title: widget.id == NEW_ID ? '플리 추가' : '플리 수정',
+      title: id == NEW_ID ? '플리 추가' : '플리 수정',
       appBarActions: [
         IconButton(
           onPressed: () async {
             if (!isSaving) {
-              if (await onSavePressed()) {
+              if (await onSavePressed(
+                context: context,
+                ref: ref,
+              )) {
                 context.pop<PopDataModel>(
                   const PopDataModel(refetch: true),
                 );
@@ -175,7 +186,9 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
     );
   }
 
-  bool validate() {
+  bool validate(
+    BuildContext context,
+  ) {
     if (titleTextCon.text == '') {
       FlutterUtils.showSnackBar(
         context: context,
@@ -227,11 +240,14 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
     return true;
   }
 
-  Future<bool> onSavePressed() async {
+  Future<bool> onSavePressed({
+    required BuildContext context,
+    required WidgetRef ref,
+  }) async {
     isSaving = true;
     FocusScope.of(context).requestFocus(FocusNode());
     FullLoadingScreen(context).startLoading();
-    bool validateResult = validate();
+    bool validateResult = validate(context);
     if (validateResult) {
       // youtube music id 만 자르기
       youtubeMusicIdTextCon.text = youtubeMusicIdTextCon.text.startsWith("http")
@@ -247,7 +263,7 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
       spotifyIdTextCon.text = spotifyIdTextCon.text.split("?")[0];
 
       MusicModel music = MusicModel(
-        id: widget.id,
+        id: id,
         title: titleTextCon.text,
         artiste: artisteTextCon.text,
         albumCover: albumCoverTextCon.text,
@@ -262,7 +278,7 @@ class _MusicEditScreenState extends ConsumerState<MusicEditScreen> {
         filename: thumbNailFileName,
       );
 
-      if (widget.id == NEW_ID) {
+      if (id == NEW_ID) {
         await ref
             .read(musicProvider.notifier)
             .addMusic(music: music, thumbnail: thumbnail);

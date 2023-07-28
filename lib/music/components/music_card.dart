@@ -16,6 +16,7 @@ class MusicCard extends StatelessWidget {
   final String albumCover;
   final String youtubeMusicId;
   final String spotifyId;
+  final void Function(int)? onThreeDotSelected;
 
   const MusicCard({
     Key? key,
@@ -26,10 +27,12 @@ class MusicCard extends StatelessWidget {
     required this.albumCover,
     required this.youtubeMusicId,
     required this.spotifyId,
+    required this.onThreeDotSelected,
   }) : super(key: key);
 
   factory MusicCard.fromModel({
     required MusicModel model,
+    required void Function(int)? onThreeDotSelected,
   }) {
     return MusicCard(
       id: model.id,
@@ -39,6 +42,7 @@ class MusicCard extends StatelessWidget {
       albumCover: model.albumCover,
       youtubeMusicId: model.youtubeMusicId,
       spotifyId: model.spotifyId,
+      onThreeDotSelected: onThreeDotSelected,
     );
   }
 
@@ -94,22 +98,6 @@ class MusicCard extends StatelessWidget {
             color: Colors.black.withOpacity(0.5),
           ),
         ),
-        // ClipRRect(
-        //   borderRadius: const BorderRadius.all(
-        //     Radius.circular(10),
-        //   ),
-        //   child: BackdropFilter(
-        //     filter: ImageFilter.blur(
-        //       sigmaX: 5.0,
-        //       sigmaY: 5.0,
-        //     ),
-        //     child: Container(
-        //       color: Colors.transparent,
-        //       width: MediaQuery.of(context).size.width,
-        //       height: MediaQuery.of(context).size.width,
-        //     ),
-        //   ),
-        // ),
         Positioned(
           bottom: 0,
           left: 0,
@@ -235,6 +223,21 @@ class MusicCard extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 0,
+          child: PopupMenuButton<int>(
+            icon: const Icon(
+              Icons.more_vert_outlined,
+              color: Colors.white,
+            ),
+            itemBuilder: (BuildContext context) => <PopupMenuItem<int>>[
+              const PopupMenuItem<int>(value: 1, child: Text('수정')),
+              const PopupMenuItem<int>(value: 2, child: Text('삭제')),
+            ],
+            onSelected: onThreeDotSelected,
           ),
         ),
       ],
