@@ -135,7 +135,9 @@ class MusicScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultSliverAppbarListviewLayout(
       sliverAppBar: _renderAppBar(context),
-      onRefresh: ref.read(musicProvider.notifier).paginate(forceRefetch: true),
+      onRefresh: () async {
+        await ref.read(musicProvider.notifier).paginate(forceRefetch: true);
+      },
       onPressAdd: () {
         context.pushNamed(
           MusicEditScreen.routeName,
@@ -170,7 +172,7 @@ class MusicScreen extends ConsumerWidget {
         ref: ref,
         context: context,
         routeName: MusicEditScreen.routeName,
-        snackBarText: 'Diary updated!',
+        snackBarText: 'Music updated!',
         id: diaryList[index].id,
       );
     } else if (value == 2) {
@@ -214,6 +216,7 @@ class MusicScreen extends ConsumerWidget {
       MusicEditScreen.routeName,
       pathParameters: {'rid': id ?? NEW_ID},
     );
+    await Future.delayed(const Duration(milliseconds: 500), () {});
     if (popData != null && popData.refetch == true) {
       ref.read(musicProvider.notifier).paginate(forceRefetch: true);
       ScaffoldMessenger.of(context).showSnackBar(

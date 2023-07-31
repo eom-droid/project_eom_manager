@@ -10,10 +10,12 @@ import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/layout/default_layout.dart';
 import 'package:manager/common/model/pop_data_model.dart';
+import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/common/utils/flutter_utils.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/provider/music_provider.dart';
 
+//
 class MusicEditScreen extends ConsumerWidget {
   static String get routeName => "musicEdit";
   final String id;
@@ -76,6 +78,7 @@ class MusicEditScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    init(ref);
     return DefaultLayout(
       title: id == NEW_ID ? '플리 추가' : '플리 수정',
       appBarActions: [
@@ -262,6 +265,17 @@ class MusicEditScreen extends ConsumerWidget {
           : spotifyIdTextCon.text;
       spotifyIdTextCon.text = spotifyIdTextCon.text.split("?")[0];
 
+      MultipartFile? thumbnail;
+      String thumbnailFileName = albumCoverTextCon.text.split('/').last;
+      if (!albumCoverTextCon.text.startsWith("http")) {
+        thumbnailFileName = thumbnailFileName.split('/').last;
+        thumbnail = await MultipartFile.fromFile(
+          albumCoverTextCon.text,
+          filename: thumbnailFileName,
+        );
+      } else {
+        albumCoverTextCon.text = DataUtils.urlToPath(albumCoverTextCon.text);
+      }
       MusicModel music = MusicModel(
         id: id,
         title: titleTextCon.text,
@@ -271,17 +285,12 @@ class MusicEditScreen extends ConsumerWidget {
         youtubeMusicId: youtubeMusicIdTextCon.text,
         spotifyId: spotifyIdTextCon.text,
       );
-      final String thumbNailFileName = albumCoverTextCon.text.split('/').last;
-
-      MultipartFile thumbnail = await MultipartFile.fromFile(
-        albumCoverTextCon.text,
-        filename: thumbNailFileName,
-      );
 
       if (id == NEW_ID) {
+        // 상단 validation에서 thumbnial의 유무를 확인함
         await ref
             .read(musicProvider.notifier)
-            .addMusic(music: music, thumbnail: thumbnail);
+            .addMusic(music: music, thumbnail: thumbnail!);
       } else {
         await ref
             .read(musicProvider.notifier)

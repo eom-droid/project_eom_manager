@@ -3,7 +3,7 @@ import 'package:manager/common/const/colors.dart';
 
 class DefaultSliverAppbarListviewLayout extends StatelessWidget {
   final Widget sliverAppBar;
-  final Future<void> onRefresh;
+  final Future<void> Function() onRefresh;
   final VoidCallback onPressAdd;
   final Widget listview;
   const DefaultSliverAppbarListviewLayout({
@@ -25,9 +25,7 @@ class DefaultSliverAppbarListviewLayout extends StatelessWidget {
               sliverAppBar,
             ],
             body: RefreshIndicator(
-              onRefresh: () async {
-                onRefresh;
-              },
+              onRefresh: onRefresh,
               child: listview,
             ),
           ),

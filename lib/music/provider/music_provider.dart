@@ -53,13 +53,13 @@ class MusicStateNotifier
 
   Future<void> updateMusic({
     required MusicModel music,
-    required MultipartFile thumbnail,
+    required MultipartFile? thumbnail,
   }) async {
     await super.repository.updateMusic(
-      id: music.id,
-      music: music.toJson(),
-      file: [thumbnail],
-    );
+          id: music.id,
+          music: music.toJson(),
+          file: thumbnail != null ? [thumbnail] : [],
+        );
   }
 
   Future<void> deleteMusic({

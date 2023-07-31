@@ -26,7 +26,9 @@ class DiaryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultSliverAppbarListviewLayout(
       sliverAppBar: _renderAppBar(context),
-      onRefresh: ref.read(diaryProvider.notifier).paginate(forceRefetch: true),
+      onRefresh: () async {
+        await ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
+      },
       onPressAdd: () {
         context.pushNamed(
           DiaryEditScreen.routeName,
@@ -227,6 +229,8 @@ class DiaryScreen extends ConsumerWidget {
     );
     if (popData != null && popData.refetch == true) {
       ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
+      await Future.delayed(const Duration(milliseconds: 500), () {});
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(snackBarText),
