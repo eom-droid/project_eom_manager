@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/const/data.dart';
+import 'package:manager/common/const/setting.dart';
 import 'dart:math' as math;
 
 import 'package:manager/diary/view/diary_screen.dart';
@@ -93,6 +94,7 @@ class _FrontImagesRender extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final aspectWidth = MediaQuery.of(context).size.width / defaultWidth;
     List<int> middleImageList = List.generate(
         (MediaQuery.of(context).size.width / 40).ceil(), (index) => index);
 
@@ -111,14 +113,14 @@ class _FrontImagesRender extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   "asset/imgs/icons/star_3_topHome.svg",
-                  width: 30.0,
+                  width: 30.0 * aspectWidth,
                 ),
-                const Text(
+                Text(
                   "personal\nEom",
                   style: TextStyle(
                     color: Colors.white,
                     fontFamily: "sabreshark",
-                    fontSize: 32.0,
+                    fontSize: 32.0 * aspectWidth,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -131,7 +133,7 @@ class _FrontImagesRender extends StatelessWidget {
             right: 16,
             child: Image.asset(
               "asset/imgs/home_7_gradient_smile.png",
-              width: 40.0,
+              width: 40.0 * aspectWidth,
             ),
           ),
           // 2. 좌측 상단 Planet her
@@ -140,7 +142,7 @@ class _FrontImagesRender extends StatelessWidget {
             left: 16,
             child: Image.asset(
               "asset/imgs/home_1_planetHerReceipt.png",
-              width: 60.0,
+              width: 60.0 * aspectWidth,
             ),
           ),
           // 3. 좌측 상단 별
@@ -149,7 +151,7 @@ class _FrontImagesRender extends StatelessWidget {
             left: 120,
             child: SvgPicture.asset(
               "asset/imgs/icons/star_2_greenFlash.svg",
-              width: 90.0,
+              width: 90.0 * aspectWidth,
             ),
           ),
           // 4. 좌측상단 penny board
@@ -163,7 +165,7 @@ class _FrontImagesRender extends StatelessWidget {
                 turns: const AlwaysStoppedAnimation(15 / 360),
                 child: Image.asset(
                   "asset/imgs/home_3_penny_board.png",
-                  width: 180.0,
+                  width: 180.0 * aspectWidth,
                 ),
               ),
             ),
@@ -174,7 +176,7 @@ class _FrontImagesRender extends StatelessWidget {
             left: 50,
             child: Image.asset(
               "asset/imgs/home_5_lego.png",
-              height: 74.0,
+              height: 74.0 * aspectWidth,
             ),
           ),
           // 6. 우측상단 eating marshmello
@@ -183,7 +185,7 @@ class _FrontImagesRender extends StatelessWidget {
             right: 0,
             child: Image.asset(
               "asset/imgs/home_2_eating_marshmello.png",
-              width: 250.0,
+              width: 250.0 * aspectWidth,
             ),
           ),
           // 7. 중단 사진들
@@ -195,7 +197,7 @@ class _FrontImagesRender extends StatelessWidget {
                 turns: const AlwaysStoppedAnimation(23 / 360),
                 child: Image.asset(
                   "asset/imgs/home_6_black_eye.png",
-                  width: 100.0,
+                  width: 100.0 * aspectWidth,
                 ),
               ),
             ),
@@ -206,7 +208,7 @@ class _FrontImagesRender extends StatelessWidget {
             left: 0,
             child: Image.asset(
               "asset/imgs/home_8_smile_sitdown.png",
-              width: 177.0,
+              width: 177.0 * aspectWidth,
             ),
           ),
           // 9. 하단 주간 star 스티커
@@ -217,27 +219,27 @@ class _FrontImagesRender extends StatelessWidget {
               turns: const AlwaysStoppedAnimation(25 / 360),
               child: SvgPicture.asset(
                 "asset/imgs/icons/star_1.svg",
-                width: 75,
+                width: 75 * aspectWidth,
               ),
             ),
           ),
           // 10. 우측하단 스티커
           Positioned(
-              bottom: 250,
+              bottom: 250 * aspectWidth,
               right: 0,
               child: Column(
                 children: [
                   Image.asset(
                     "asset/imgs/home_9_salute_emoji.png",
-                    width: 25,
+                    width: 27 * aspectWidth,
                   ),
                   Image.asset(
                     "asset/imgs/home_9_salute_emoji.png",
-                    width: 25,
+                    width: 27 * aspectWidth,
                   ),
                   Image.asset(
                     "asset/imgs/home_9_salute_emoji.png",
-                    width: 25,
+                    width: 27 * aspectWidth,
                   ),
                 ],
               )),
@@ -249,7 +251,7 @@ class _FrontImagesRender extends StatelessWidget {
               turns: const AlwaysStoppedAnimation((348 / 360)),
               child: Image.asset(
                 "asset/imgs/home_3_penny_board.png",
-                width: 200.0,
+                width: 200.0 * aspectWidth,
               ),
             ),
           ),
@@ -259,7 +261,7 @@ class _FrontImagesRender extends StatelessWidget {
             right: 50,
             child: Image.asset(
               "asset/imgs/home_4_riding_board.png",
-              width: 194.0,
+              width: 194.0 * aspectWidth,
             ),
           ),
           Positioned(

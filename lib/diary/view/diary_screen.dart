@@ -104,7 +104,7 @@ class DiaryScreen extends ConsumerWidget {
       child: ListView.separated(
         itemCount: cp.data.length + 1,
         separatorBuilder: (context, index) => const Padding(
-          padding: EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+          padding: EdgeInsets.only(top: 32.0, left: 16.0, right: 16.0),
           child: Divider(
             color: Colors.grey,
           ),
@@ -130,7 +130,7 @@ class DiaryScreen extends ConsumerWidget {
           }
 
           return Padding(
-            padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+            padding: const EdgeInsets.only(top: 32.0, left: 16.0, right: 16.0),
             child: Container(
               decoration: BoxDecoration(
                 boxShadow: [

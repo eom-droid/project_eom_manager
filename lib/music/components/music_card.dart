@@ -58,19 +58,6 @@ class MusicCard extends StatelessWidget {
               Radius.circular(10),
             ),
             color: Colors.black,
-
-            // image: DecorationImage(
-            //   colorFilter: ColorFilter.mode(
-            //     Colors.black.withOpacity(0.5),
-            //     BlendMode.dstATop,
-            //   ),
-            //   image: NetworkImage(albumCover),
-            //   fit: BoxFit.cover,
-            // ),
-            // border: Border.all(
-            //   color: Colors.white,
-            //   width: 3,
-            // ),
           ),
           child: ClipRRect(
             borderRadius: const BorderRadius.all(

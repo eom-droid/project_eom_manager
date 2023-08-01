@@ -15,7 +15,7 @@ import 'package:manager/common/utils/flutter_utils.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/provider/music_provider.dart';
 
-//
+// ignore: must_be_immutable
 class MusicEditScreen extends ConsumerWidget {
   static String get routeName => "musicEdit";
   final String id;
@@ -36,33 +36,6 @@ class MusicEditScreen extends ConsumerWidget {
   TextEditingController spotifyIdTextCon = TextEditingController();
 
   bool isSaving = false;
-
-  // @override
-  // void initState() {
-  //   // TODO: implement initState
-  //   super.initState();
-  //   if(widget.id !=NEW_ID){
-
-  //   }
-
-  //   // if (widget.id != NEW_ID) {
-  //   //   final model = ref.read(musicProvider.notifier).getMusicById(widget.id);
-  //   //   titleTextCon.text = model.title;
-  //   //   artisteTextCon.text = model.artiste;
-  //   //   albumCoverTextCon.text = model.albumCover;
-  //   //   reviewTextCon.text = model.review;
-  //   //   youtubeMusicIdTextCon.text = model.youtubeMusicId;
-  //   //   spotifyIdTextCon.text = model.spotifyId;
-  //   // } else {
-  //   //   titleTextCon.text = '홍대충';
-  //   //   artisteTextCon.text = 'lobonabeat';
-  //   //   reviewTextCon.text = "홍대충이라는 노래는 홍대에서";
-  //   //   youtubeMusicIdTextCon.text =
-  //   //       "https://music.youtube.com/watch?v=N-YypFxDC_0&feature=share";
-  //   //   spotifyIdTextCon.text =
-  //   //       "https://open.spotify.com/track/1HL8Jveuh7tZnCqHzGyyzB?si=678dd1c98b50405b";
-  //   // }
-  // }
 
   init(WidgetRef ref) {
     final state = ref.watch(musicDetailProvider(id));

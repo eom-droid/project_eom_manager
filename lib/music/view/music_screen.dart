@@ -72,8 +72,7 @@ class MusicScreen extends ConsumerWidget {
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
-      child: ListView.separated(
-        separatorBuilder: (context, index) => const SizedBox(height: 32.0),
+      child: ListView.builder(
         itemBuilder: (context, index) {
           if (index == cp.data.length) {
             return Padding(
