@@ -49,15 +49,14 @@ class DiaryEditScreen extends ConsumerStatefulWidget {
 }
 
 class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
-  final GlobalKey<FormState> formKey = GlobalKey();
   final ScrollController scrollController = ScrollController();
 
   bool isSaving = false;
   bool isInitialized = false;
 
-  String title = '';
+  TextEditingController title = TextEditingController();
   DateTime postDT = DateTime.now();
-  String weather = '';
+  TextEditingController weather = TextEditingController();
   List<String> hashtags = [];
   List<_ContentInput> contents = [];
   DiaryCategory category = DiaryCategory.daily;
@@ -90,9 +89,9 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       return;
     }
 
-    title = state.title;
+    title.text = state.title;
     postDT = state.postDT;
-    weather = state.weather;
+    weather.text = state.weather;
     hashtags = state.hashtags;
     category = state.category;
 
@@ -186,6 +185,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         top: false,
         child: CustomScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          physics: const BouncingScrollPhysics(),
           controller: scrollController,
           slivers: [
             _renderDiaryBasicInfo(),
@@ -233,54 +233,49 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         children: [
           _renderThumbnail(),
           const SizedBox(height: 16.0),
-          Form(
-            key: formKey,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  _Category(
-                    initValue: category,
-                    onChanged: (value) {
-                      category = value;
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  _Title(
-                    initialValue: title,
-                    onSaved: onTitleSaved,
-                  ),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _PostDT(
-                          initValue: postDT,
-                          onChanged: (DateTime value) {
-                            postDT = value;
-                          },
-                        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                _Category(
+                  initValue: category,
+                  onChanged: (value) {
+                    category = value;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                _Title(
+                  controller: title,
+                ),
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _PostDT(
+                        initValue: postDT,
+                        onChanged: (DateTime value) {
+                          postDT = value;
+                        },
                       ),
-                      const SizedBox(width: 16.0),
-                      Expanded(
-                        child: _Weather(
-                          initialValue: weather,
-                          onSaved: onWeatherSaved,
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 16.0),
-                  _Hashtags(
-                    initialValue: hashtags,
-                    onChanged: (value) => hashtags = value,
-                    hintText: '# 제외, 공백으로 나눠져요.(최대 20자)',
-                    maxLength: 20,
-                  ),
-                ],
-              ),
+                    ),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: _Weather(
+                        controller: weather,
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                _Hashtags(
+                  initialValue: hashtags,
+                  onChanged: (value) => hashtags = value,
+                  hintText: '# 제외, 공백으로 나눠져요.(최대 20자)',
+                  maxLength: 20,
+                ),
+              ],
             ),
           ),
         ],
@@ -341,10 +336,9 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         },
         itemCount: contents.length,
         itemBuilder: (context, index) {
-          final key = DateTime.now().toString();
           return Dismissible(
             direction: DismissDirection.endToStart,
-            key: Key(key),
+            key: Key(contents[index].hashCode.toString()),
             onDismissed: (direction) {
               setState(() {
                 if (thumbnailIndex == index) {
@@ -400,7 +394,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     FullLoadingScreen(context).startLoading();
     bool validateResult = await validate();
     if (validateResult) {
-      formKey.currentState!.save();
       final List<String> txts = [];
       final List<String> imgs = [];
       final List<String> vids = [];
@@ -485,9 +478,9 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
       DiaryDetailModel diaryDetail = DiaryDetailModel(
         id: widget.id,
-        title: title,
+        title: title.text,
         writer: "엄태호",
-        weather: weather,
+        weather: weather.text,
         hashtags: hashtags,
         postDT: postDT,
         thumbnail: thumbnail,
@@ -517,24 +510,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   }
 
   Future<bool> validate() async {
-    if (formKey.currentContext == null) {
-      FlutterUtils.showSnackBar(
-        context: context,
-        content: 'formKey가 없습니다',
-      );
-      return false;
-    }
-
-    // form 내 모든 필드의 validate를 실행
-    if (!formKey.currentState!.validate()) {
-      FlutterUtils.showSnackBar(
-        context: context,
-        content: '기본 정보를 입력해주세요',
-      );
-
-      return false;
-    }
-
     if (contents.isEmpty) {
       FlutterUtils.showSnackBar(
         context: context,
@@ -589,14 +564,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     }
     return true;
   }
-
-  onTitleSaved(String? val) {
-    title = val ?? '';
-  }
-
-  onWeatherSaved(String? val) {
-    weather = val ?? '';
-  }
 }
 
 class _ContentInputWidget extends StatefulWidget {
@@ -612,10 +579,10 @@ class _ContentInputWidget extends StatefulWidget {
   });
 
   @override
-  State<_ContentInputWidget> createState() => __ContentInputWidgetState();
+  State<_ContentInputWidget> createState() => _ContentInputWidgetState();
 }
 
-class __ContentInputWidgetState extends State<_ContentInputWidget> {
+class _ContentInputWidgetState extends State<_ContentInputWidget> {
   @override
   Widget build(BuildContext context) {
     return DiaryEditDetailCard(
@@ -802,20 +769,17 @@ class _CategoryState extends State<_Category> {
 }
 
 class _Title extends StatelessWidget {
-  final FormFieldSetter<String> onSaved;
-  final String initialValue;
+  final TextEditingController controller;
 
   const _Title({
-    required this.onSaved,
-    required this.initialValue,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return CustomTextFormField(
-      initialValue: initialValue,
       label: '제목',
-      onSaved: onSaved,
+      controller: controller,
     );
   }
 }
@@ -849,7 +813,6 @@ class _PostDTState extends State<_PostDT> {
   Widget build(BuildContext context) {
     return CustomTextFormField(
       label: '게시일자',
-      onSaved: (_) {},
       onTap: () => onTapDatePicker(),
       controller: postDateTextController,
     );
@@ -905,20 +868,17 @@ class _PostDTState extends State<_PostDT> {
 }
 
 class _Weather extends StatelessWidget {
-  final FormFieldSetter<String> onSaved;
-  final String initialValue;
+  final TextEditingController controller;
 
   const _Weather({
-    required this.onSaved,
-    required this.initialValue,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return CustomTextFormField(
-      initialValue: initialValue,
       label: '날씨',
-      onSaved: onSaved,
+      controller: controller,
     );
   }
 }
@@ -953,6 +913,7 @@ class _HashtagsState extends State<_Hashtags> {
 
   @override
   Widget build(BuildContext context) {
+    print('??????????');
     label = '해시태그(${_hashtagsLabel(hashtags)})';
 
     return CustomTextFormField(

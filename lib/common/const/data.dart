@@ -9,7 +9,9 @@ const emulatorIp = '10.0.2.2:3001';
 // ios simulator 기준 localhost
 const simulatorIp = '127.0.0.1:3001';
 
+// dev
 final ip = Platform.isIOS ? simulatorIp : emulatorIp;
+// const ip = '13.124.101.120';
 
 const accessToken = 'ProjectEomManagerAccessToken';
 

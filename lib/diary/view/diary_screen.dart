@@ -102,6 +102,7 @@ class DiaryScreen extends ConsumerWidget {
       removeTop: true,
       context: context,
       child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
         itemCount: cp.data.length + 1,
         separatorBuilder: (context, index) => const Padding(
           padding: EdgeInsets.only(top: 32.0, left: 16.0, right: 16.0),

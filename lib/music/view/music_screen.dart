@@ -73,6 +73,7 @@ class MusicScreen extends ConsumerWidget {
       context: context,
       removeTop: true,
       child: ListView.builder(
+        physics: const BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           if (index == cp.data.length) {
             return Padding(
