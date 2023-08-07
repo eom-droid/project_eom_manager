@@ -52,7 +52,7 @@ class RouterProvider extends ChangeNotifier {
             GoRoute(
               path: 'music',
               name: MusicScreen.routeName,
-              builder: (_, state) => MusicScreen(),
+              builder: (_, state) => const MusicScreen(),
             ),
             GoRoute(
               path: 'music/:rid/edit',

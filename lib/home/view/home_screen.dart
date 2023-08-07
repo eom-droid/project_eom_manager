@@ -19,8 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    // double width = _imageKey.currentContext?.size?.width ?? 0;
-    // print(width);
     return const Scaffold(
       body: Stack(
         children: [
