@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart' hide Headers;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/dio/dio.dart';
@@ -15,6 +16,8 @@ part 'music_repository.g.dart';
 
 final musicRepositoryProvider = Provider<MusicRepository>((ref) {
   final dio = ref.read(dioProvider);
+  String ip = dotenv.env['IP']!;
+
   return MusicRepository(dio, baseUrl: 'http://$ip/api/v1/musics');
 });
 

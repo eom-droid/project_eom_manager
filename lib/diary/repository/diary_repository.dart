@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart' hide Headers;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/dio/dio.dart';
@@ -18,6 +19,8 @@ part 'diary_repository.g.dart';
 
 final diaryRepositoryProvider = Provider<DiaryRepository>((ref) {
   final dio = ref.read(dioProvider);
+  String ip = dotenv.env['IP']!;
+
   return DiaryRepository(dio, baseUrl: 'http://$ip/api/v1/diaries');
 });
 

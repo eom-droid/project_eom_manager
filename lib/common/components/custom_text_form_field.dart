@@ -7,6 +7,7 @@ class CustomTextFormField extends StatelessWidget {
   final FormFieldSetter<String>? onSaved;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
+  final bool? obscureText;
   final String? hintText;
   final int? maxLength;
   final TextEditingController? controller;
@@ -21,6 +22,7 @@ class CustomTextFormField extends StatelessWidget {
     this.hintText,
     this.maxLength,
     this.controller,
+    this.obscureText = false,
   });
 
   @override
@@ -42,6 +44,7 @@ class CustomTextFormField extends StatelessWidget {
 
   Widget renderTextField() {
     return TextFormField(
+      obscureText: obscureText!,
       controller: controller,
       initialValue: initialValue,
       onTap: onTap,

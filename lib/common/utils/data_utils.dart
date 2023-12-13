@@ -18,6 +18,10 @@ class DataUtils {
     }
   }
 
+  static RoleType numberToRoleType(int value) {
+    return RoleType.getByCode(value);
+  }
+
   static List<String> listPathsToUrls(List paths) {
     return paths.map((e) => pathToUrl(e)).toList();
   }
@@ -94,5 +98,12 @@ class DataUtils {
 
     final fileExtension = filePath.split('.').last;
     return videoFileExtension.contains(fileExtension);
+  }
+
+  static bool isEmailValid(String email) {
+    final emailRegExp = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
+    return emailRegExp;
   }
 }

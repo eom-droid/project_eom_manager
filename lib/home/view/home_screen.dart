@@ -114,7 +114,7 @@ class _FrontImagesRender extends StatelessWidget {
                   width: 30.0 * aspectWidth,
                 ),
                 Text(
-                  "personal\nEom",
+                  "personal\nEom\nAdmin",
                   style: TextStyle(
                     color: Colors.white,
                     fontFamily: "sabreshark",

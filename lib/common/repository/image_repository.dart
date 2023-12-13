@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart' hide Headers;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:manager/common/const/data.dart';
 import 'package:manager/common/dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -8,6 +8,8 @@ part 'image_repository.g.dart';
 
 final uploadRepositoryProvider = Provider<UploadRepository>((ref) {
   final dio = ref.read(dioProvider);
+  String ip = dotenv.env['IP']!;
+
   return UploadRepository(dio, baseUrl: 'http://$ip/upload/diary/images');
 });
 

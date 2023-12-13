@@ -9,7 +9,8 @@ const simulatorIp = '127.0.0.1:3001';
 
 // dev
 // final ip = Platform.isIOS ? simulatorIp : emulatorIp;
-const ip = '13.124.101.120';
+// const ip = '13.124.101.120';
+// const ip = '127.0.0.1:3001';
 
 const accessToken = 'ProjectEomManagerAccessToken';
 
@@ -57,6 +58,27 @@ enum DiaryCategory {
         return DiaryCategory.study;
       default:
         return DiaryCategory.daily;
+    }
+  }
+}
+
+enum RoleType {
+  user(0),
+  manager(5),
+  admin(10);
+
+  final int value;
+  const RoleType(this.value);
+  factory RoleType.getByCode(int code) {
+    switch (code) {
+      case 0:
+        return RoleType.user;
+      case 5:
+        return RoleType.manager;
+      case 10:
+        return RoleType.admin;
+      default:
+        return RoleType.user;
     }
   }
 }

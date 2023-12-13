@@ -491,17 +491,20 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         vids: vids,
         contentOrder: contentOrder,
       );
-
-      if (widget.id == NEW_ID) {
-        await ref.read(diaryProvider.notifier).addDiary(
-              diary: diaryDetail,
-              uploadFiles: uploadFiles,
-            );
-      } else {
-        await ref.read(diaryProvider.notifier).updateDiary(
-              diary: diaryDetail,
-              uploadFiles: uploadFiles,
-            );
+      try {
+        if (widget.id == NEW_ID) {
+          await ref.read(diaryProvider.notifier).addDiary(
+                diary: diaryDetail,
+                uploadFiles: uploadFiles,
+              );
+        } else {
+          await ref.read(diaryProvider.notifier).updateDiary(
+                diary: diaryDetail,
+                uploadFiles: uploadFiles,
+              );
+        }
+      } catch (e) {
+        print(e);
       }
     }
     FullLoadingScreen(context).stopLoading();
@@ -553,9 +556,17 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
       }
     }
     if (widget.id == NEW_ID) {
-      if (await ref.read(diaryProvider.notifier).checkDiaryPostDTExist(
-            postDT: postDT,
-          )) {
+      final duplicated =
+          await ref.read(diaryProvider.notifier).checkDiaryPostDTExist(
+                postDT: postDT,
+              );
+      if (duplicated == null) {
+        FlutterUtils.showSnackBar(
+          context: context,
+          content: '실패하였습니다.',
+        );
+        return false;
+      } else if (duplicated) {
         FlutterUtils.showSnackBar(
           context: context,
           content: '해당 날짜/시간에 이미 다이어리가 존재합니다',

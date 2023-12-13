@@ -100,15 +100,20 @@ class DiaryStateNotifier extends PaginationProvider<DiaryModel, DiaryRepository,
         );
   }
 
-  Future<bool> checkDiaryPostDTExist({
+  Future<bool?> checkDiaryPostDTExist({
     required DateTime postDT,
   }) async {
-    SearchParamsDiary searchParamsDiary = SearchParamsDiary(
-      postDT: postDT,
-    );
-    return await super.repository.checkDiaryPostDTExist(
-          searchParam: searchParamsDiary,
-        );
+    try {
+      SearchParamsDiary searchParamsDiary = SearchParamsDiary(
+        postDT: postDT,
+      );
+
+      return await repository.checkDiaryPostDTExist(
+        searchParam: searchParamsDiary,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> updateDiary({
