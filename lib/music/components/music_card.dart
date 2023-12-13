@@ -243,9 +243,12 @@ class MusicCard extends StatelessWidget {
       );
       await intent.launch();
     } else {
-      final String spotifyContent = "https://open.spotify.com/track/$spotifyId";
-      final String branchLink =
-          "https://spotify.link/content_linking?~campaign=&\$deeplink_path=$spotifyContent&\$fallback_url'=$spotifyContent";
+      // final String spotifyContent = "https://open.spotify.com/track/$spotifyId";
+      // // final String branchLink =
+      // //     "https://spotify.link/content_linking?~campaign=&\$deeplink_path=$spotifyContent&\$fallback_url'=$spotifyContent";
+      // final String branchLink =
+      //     "https://spotify.link/content_linking?~campaign=$spotifyContent";
+      const branchLink = "https://linktw.in/L928hK";
       await launchUrlString(branchLink);
     }
   }

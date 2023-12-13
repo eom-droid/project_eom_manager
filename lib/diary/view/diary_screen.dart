@@ -110,7 +110,7 @@ class DiaryScreen extends ConsumerWidget {
             color: Colors.grey,
           ),
         ),
-        itemBuilder: (context, index) {
+        itemBuilder: (_, index) {
           if (index == cp.data.length) {
             return Padding(
               padding: const EdgeInsets.symmetric(
@@ -230,7 +230,6 @@ class DiaryScreen extends ConsumerWidget {
     );
     if (popData != null && popData.refetch == true) {
       ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
-      await Future.delayed(const Duration(milliseconds: 500), () {});
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

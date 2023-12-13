@@ -552,16 +552,18 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         return false;
       }
     }
-
-    if (await ref.read(diaryProvider.notifier).checkDiaryPostDTExist(
-          postDT: postDT,
-        )) {
-      FlutterUtils.showSnackBar(
-        context: context,
-        content: '해당 날짜/시간에 이미 다이어리가 존재합니다',
-      );
-      return false;
+    if (widget.id == NEW_ID) {
+      if (await ref.read(diaryProvider.notifier).checkDiaryPostDTExist(
+            postDT: postDT,
+          )) {
+        FlutterUtils.showSnackBar(
+          context: context,
+          content: '해당 날짜/시간에 이미 다이어리가 존재합니다',
+        );
+        return false;
+      }
     }
+
     return true;
   }
 }
@@ -913,7 +915,6 @@ class _HashtagsState extends State<_Hashtags> {
 
   @override
   Widget build(BuildContext context) {
-    print('??????????');
     label = '해시태그(${_hashtagsLabel(hashtags)})';
 
     return CustomTextFormField(
