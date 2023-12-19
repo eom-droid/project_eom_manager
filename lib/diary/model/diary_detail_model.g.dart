@@ -14,7 +14,6 @@ DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
       weather: json['weather'] as String,
       hashtags:
           (json['hashtags'] as List<dynamic>).map((e) => e as String).toList(),
-      postDT: DataUtils.toLocalTimeZone(json['postDT'] as String),
       thumbnail: DataUtils.pathToUrl(json['thumbnail'] as String),
       category: DataUtils.stringToDiaryCategory(json['category'] as String),
       isShown: json['isShown'] as bool,
@@ -23,6 +22,7 @@ DiaryDetailModel _$DiaryDetailModelFromJson(Map<String, dynamic> json) =>
       vids: DataUtils.listPathsToUrls(json['vids'] as List),
       contentOrder: DataUtils.listStringToListDiaryContentType(
           json['contentOrder'] as List),
+      createdAt: DataUtils.toLocalTimeZone(json['createdAt'] as String),
     );
 
 Map<String, dynamic> _$DiaryDetailModelToJson(DiaryDetailModel instance) =>
@@ -32,10 +32,10 @@ Map<String, dynamic> _$DiaryDetailModelToJson(DiaryDetailModel instance) =>
       'writer': instance.writer,
       'weather': instance.weather,
       'hashtags': instance.hashtags,
-      'postDT': instance.postDT.toIso8601String(),
       'thumbnail': instance.thumbnail,
       'category': DataUtils.diaryCategoryToString(instance.category),
       'isShown': instance.isShown,
+      'createdAt': instance.createdAt.toIso8601String(),
       'txts': instance.txts,
       'imgs': instance.imgs,
       'vids': instance.vids,

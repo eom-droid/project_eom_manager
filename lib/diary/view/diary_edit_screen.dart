@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:manager/common/components/custom_animated_switch.dart';
 import 'package:manager/common/components/custom_text_form_field.dart';
 import 'package:manager/common/components/custom_video_player.dart';
@@ -55,7 +54,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
   bool isInitialized = false;
 
   TextEditingController title = TextEditingController();
-  DateTime postDT = DateTime.now();
+
   TextEditingController weather = TextEditingController();
   List<String> hashtags = [];
   List<_ContentInput> contents = [];
@@ -90,7 +89,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
     }
 
     title.text = state.title;
-    postDT = state.postDT;
     weather.text = state.weather;
     hashtags = state.hashtags;
     category = state.category;
@@ -248,25 +246,8 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
                   controller: title,
                 ),
                 const SizedBox(height: 16.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _PostDT(
-                        initValue: postDT,
-                        onChanged: (DateTime value) {
-                          postDT = value;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16.0),
-                    Expanded(
-                      child: _Weather(
-                        controller: weather,
-                      ),
-                    )
-                  ],
+                _Weather(
+                  controller: weather,
                 ),
                 const SizedBox(height: 16.0),
                 _Hashtags(
@@ -482,7 +463,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         writer: "엄태호",
         weather: weather.text,
         hashtags: hashtags,
-        postDT: postDT,
         thumbnail: thumbnail,
         category: category,
         isShown: true,
@@ -490,6 +470,7 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         imgs: imgs,
         vids: vids,
         contentOrder: contentOrder,
+        createdAt: DateTime.now(),
       );
       try {
         if (widget.id == NEW_ID) {
@@ -552,25 +533,6 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
           content: '${i + 1}번쨰 번쨰 컨텐츠 내용을 입력해주세요',
         );
 
-        return false;
-      }
-    }
-    if (widget.id == NEW_ID) {
-      final duplicated =
-          await ref.read(diaryProvider.notifier).checkDiaryPostDTExist(
-                postDT: postDT,
-              );
-      if (duplicated == null) {
-        FlutterUtils.showSnackBar(
-          context: context,
-          content: '실패하였습니다.',
-        );
-        return false;
-      } else if (duplicated) {
-        FlutterUtils.showSnackBar(
-          context: context,
-          content: '해당 날짜/시간에 이미 다이어리가 존재합니다',
-        );
         return false;
       }
     }
@@ -794,89 +756,6 @@ class _Title extends StatelessWidget {
       label: '제목',
       controller: controller,
     );
-  }
-}
-
-class _PostDT extends StatefulWidget {
-  final DateTime initValue;
-  final ValueChanged<DateTime> onChanged;
-
-  const _PostDT({
-    required this.initValue,
-    required this.onChanged,
-  });
-
-  @override
-  State<_PostDT> createState() => _PostDTState();
-}
-
-class _PostDTState extends State<_PostDT> {
-  late DateTime postDate;
-  TextEditingController postDateTextController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    postDate = widget.initValue;
-    postDateTextController.text =
-        DateFormat('yyyy-MM-dd HH:mm').format(postDate);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextFormField(
-      label: '게시일자',
-      onTap: () => onTapDatePicker(),
-      controller: postDateTextController,
-    );
-  }
-
-  onTapDatePicker() async {
-    FocusScope.of(context).requestFocus(FocusNode());
-
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: postDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    final selectedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(postDate),
-    );
-
-    if (selectedDate != null) {
-      postDate = DateTime(
-        selectedDate.year,
-        selectedDate.month,
-        selectedDate.day,
-        postDate.hour,
-        postDate.minute,
-      );
-    }
-    if (selectedTime != null) {
-      postDate = DateTime(
-        postDate.year,
-        postDate.month,
-        postDate.day,
-        selectedTime.hour,
-        selectedTime.minute,
-      );
-    }
-    setState(() {
-      postDateTextController.text =
-          DateFormat('yyyy-MM-dd HH:mm').format(postDate);
-    });
-    widget.onChanged(postDate);
-    // if (selectedTime != null) {
-
-    //   setState(() {
-    //     postDateTextController.text =
-    //         DateFormat('yyyy-MM-dd').format(selectedDate);
-    //     postDate = selectedDate;
-    //   });
-    //   widget.onChanged(selectedDate);
-    // }
   }
 }
 

@@ -173,7 +173,7 @@ class _DiaryDetailScreenState extends ConsumerState<DiaryDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    DateFormat("yy년 M월 d일 HH:mm").format(model.postDT),
+                    DateFormat("yy년 M월 d일 HH:mm").format(model.createdAt),
                     // textAlign: TextAlign.left,
                     style: const TextStyle(
                       fontSize: 14.0,

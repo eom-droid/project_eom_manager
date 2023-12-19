@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
-import 'package:manager/common/model/pagination_params.dart';
 import 'package:manager/common/provider/pagination_provider.dart';
 import 'package:manager/music/model/music_model.dart';
 import 'package:manager/music/repository/music_repository.dart';
@@ -26,7 +25,7 @@ final musicProvider =
 });
 
 class MusicStateNotifier
-    extends PaginationProvider<MusicModel, MusicRepository, PaginationParams> {
+    extends PaginationProvider<MusicModel, MusicRepository> {
   MusicStateNotifier({
     required super.repository,
   });

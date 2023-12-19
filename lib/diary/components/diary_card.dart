@@ -6,7 +6,7 @@ import 'package:manager/diary/model/diary_model.dart';
 
 class DiaryCard extends StatelessWidget {
   final String id;
-  final DateTime postDT;
+  final DateTime createdAt;
   final String thumbnail;
   final List<String> hashtags;
   final String title;
@@ -15,7 +15,7 @@ class DiaryCard extends StatelessWidget {
   const DiaryCard({
     Key? key,
     required this.id,
-    required this.postDT,
+    required this.createdAt,
     required this.thumbnail,
     required this.hashtags,
     required this.title,
@@ -28,7 +28,7 @@ class DiaryCard extends StatelessWidget {
   }) {
     return DiaryCard(
       id: model.id,
-      postDT: model.postDT,
+      createdAt: model.createdAt,
       thumbnail: model.thumbnail,
       hashtags: model.hashtags,
       title: model.title,
@@ -38,7 +38,8 @@ class DiaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String postDate = '${postDT.year}년 ${postDT.month}월 ${postDT.day}일';
+    final String postDate =
+        '${createdAt.year}년 ${createdAt.month}월 ${createdAt.day}일';
     return Stack(
       children: [
         Hero(
