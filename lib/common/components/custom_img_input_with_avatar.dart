@@ -1,30 +1,37 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:manager/common/components/full_loading_screen.dart';
 import 'package:manager/common/const/colors.dart';
+import 'package:flutter/material.dart';
+import 'package:manager/common/components/full_loading_screen.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class CustomImgInput extends StatefulWidget {
+class CustomImgInputWithAvatar extends StatefulWidget {
   final String imgPath;
   final Function(String) onChanged;
+  final Function(String) imageError;
   final double maxheightWidth;
+  final double size;
+  final bool deleteBtnActive;
 
-  const CustomImgInput({
+  const CustomImgInputWithAvatar({
     Key? key,
     required this.imgPath,
     required this.onChanged,
+    required this.imageError,
     this.maxheightWidth = 850,
+    this.size = 170,
+    this.deleteBtnActive = false,
   }) : super(key: key);
 
   @override
-  State<CustomImgInput> createState() => _CustomImgInputState();
+  State<CustomImgInputWithAvatar> createState() =>
+      _CustomImgInputWithAvatarState();
 }
 
-class _CustomImgInputState extends State<CustomImgInput> {
+class _CustomImgInputWithAvatarState extends State<CustomImgInputWithAvatar> {
   String imgPath = '';
   final picker = ImagePicker();
 
@@ -52,33 +59,55 @@ class _CustomImgInputState extends State<CustomImgInput> {
       }
 
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            // 사진이 불러와질때 순간적으로 0으로 사라지는 현상을 방지하기 위해 최소 높이를 지정
-            // 추후 rivderpod 사용 시 문제점 해결 예정
-            constraints: const BoxConstraints(minHeight: 300.0),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(widget.size / 2.6),
             child: Image(
               image: imageProvider,
               fit: BoxFit.cover,
+              width: widget.size,
+              height: widget.size,
             ),
           ),
           const SizedBox(height: 8.0),
-          OutlinedButton(
-            style: customOutlinedButtonStyle,
-            onPressed: () => getImagePath(ImageSource.gallery),
-            child: const Text('변경하기'),
-          )
+          Row(
+            children: [
+              OutlinedButton(
+                style: customOutlinedButtonStyle,
+                onPressed: () => getImagePath(ImageSource.gallery),
+                child: const Text('변경하기'),
+              ),
+              if (widget.deleteBtnActive) const SizedBox(width: 8.0),
+              if (widget.deleteBtnActive)
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: BACKGROUND_BLACK,
+                    backgroundColor: PRIMARY_COLOR,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      imgPath = '';
+                      widget.onChanged('');
+                    });
+                  },
+                  child: const Text(
+                    '삭제',
+                  ),
+                ),
+            ],
+          ),
         ],
       );
     } else {
-      return InkWell(
+      return GestureDetector(
         onTap: () => getImagePath(ImageSource.gallery),
         child: Container(
-          height: 300.0,
+          width: widget.size,
+          height: widget.size,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.0),
-            color: INPUT_BORDER_COLOR,
+            borderRadius: BorderRadius.circular(widget.size / 2.6),
+            color: Colors.grey,
           ),
           child: const Center(
             child: Column(
@@ -120,7 +149,7 @@ class _CustomImgInputState extends State<CustomImgInput> {
         });
       }
     } catch (e) {
-      // 권한을 허용하지 않았을때
+      // 1. not supported image file(ex : heic)
       if (e is PlatformException && e.code == 'photo_access_denied') {
         // 기본 toast 보여주기
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,15 +174,9 @@ class _CustomImgInputState extends State<CustomImgInput> {
             ),
           ),
         );
+      } else {
+        widget.imageError("예기치 못한 오류가 발생했습니다.");
       }
-      // 1. not supported image file(ex : heic)
-      // if (e is PlatformException) {
-      //   error = '지원하지 않는 이미지 파일입니다.';
-      // } else {
-      //   error = '예기치 못한 오류가 발생했습니다.';
-      //   print(e);
-      // }
-      // print(e);
     }
     FullLoadingScreen(context).stopLoading();
   }

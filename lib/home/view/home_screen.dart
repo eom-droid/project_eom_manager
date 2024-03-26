@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:manager/chat/view/chat_screen.dart';
 import 'package:manager/common/const/data.dart';
 import 'package:manager/common/const/setting.dart';
 import 'dart:math' as math;
@@ -8,6 +9,7 @@ import 'dart:math' as math;
 import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/home/components/routing_button.dart';
 import 'package:manager/music/view/music_screen.dart';
+import 'package:manager/settings/view/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -272,6 +274,12 @@ class _FrontImagesRender extends StatelessWidget {
               onPlayListTap: () {
                 context.pushNamed(MusicScreen.routeName);
               },
+              onChatTap: () {
+                context.goNamed(ChatScreen.routeName);
+              },
+              onSettingsTap: () {
+                context.goNamed(SettingsScreen.routeName);
+              },
             ),
           ),
         ],
@@ -283,6 +291,8 @@ class _FrontImagesRender extends StatelessWidget {
     required BuildContext context,
     required VoidCallback onDiaryTap,
     required VoidCallback onPlayListTap,
+    required VoidCallback onChatTap,
+    required VoidCallback onSettingsTap,
   }) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double deviceHeight = MediaQuery.of(context).size.height;
@@ -324,6 +334,22 @@ class _FrontImagesRender extends StatelessWidget {
                     width: 50.0,
                   ),
                   routeName: 'Play\nList',
+                ),
+                RoutingButton(
+                  onDiaryTap: onChatTap,
+                  icon: SvgPicture.asset(
+                    "asset/imgs/icons/chat.svg",
+                    width: 40.0,
+                  ),
+                  routeName: 'DM',
+                ),
+                RoutingButton(
+                  onDiaryTap: onSettingsTap,
+                  icon: SvgPicture.asset(
+                    "asset/imgs/icons/settings.svg",
+                    width: 40.0,
+                  ),
+                  routeName: 'SET',
                 ),
               ],
             ),

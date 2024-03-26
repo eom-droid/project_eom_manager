@@ -75,4 +75,20 @@ abstract class DiaryRepository
   Future<dynamic> deleteDiary({
     @Path() required String id,
   });
+
+  @POST('/{id}/like')
+  @Headers({
+    'accessToken': 'true',
+  })
+  Future<void> createLikeDiary({
+    @Path() required String id,
+  });
+
+  @DELETE('/{id}/like')
+  @Headers({
+    'accessToken': 'true',
+  })
+  Future<void> deleteLikeDiary({
+    @Path() required String id,
+  });
 }

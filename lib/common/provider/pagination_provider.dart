@@ -2,11 +2,12 @@ import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/common/model/model_with_id.dart';
 import 'package:manager/common/model/pagination_params.dart';
 import 'package:manager/common/repository/base_pagination_repository.dart';
-import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 // 페이지네이션 요청을 위한 정보 클래스
-class _PaginationInfo {
+class PaginationInfo {
   // fetch 해올 갯수
   final int fetchCount;
   // 추가로 데이터 더 가져올지의 여부
@@ -14,30 +15,37 @@ class _PaginationInfo {
   // 강제로 다시 로딩할지의 여부
   final bool forceRefetch;
 
-  _PaginationInfo({
-    this.fetchCount = 10,
+  PaginationInfo({
+    required this.fetchCount,
     this.fetchMore = false,
     this.forceRefetch = false,
   });
 }
 
-class PaginationProvider<T extends IModelPagination,
+class PaginationNotifier<T extends IModelWithId,
         U extends IBasePaginationRepository<T>>
     extends StateNotifier<CursorPaginationBase> {
   final U repository;
-  final paginationThrottle = Throttle(
-    const Duration(seconds: 3),
-    initialValue: _PaginationInfo(),
-    checkEquality: false,
-  );
+  final bool paginateAutoExecute;
+  late final String randomKey;
 
-  PaginationProvider({
+  PaginationNotifier({
     required this.repository,
+    this.paginateAutoExecute = true,
   }) : super(CursorPaginationLoading()) {
-    paginate();
-    paginationThrottle.values.listen((state) {
-      _throttlePagination(state);
-    });
+    Uuid uuid = const Uuid();
+    randomKey = uuid.v4();
+    if (paginateAutoExecute) {
+      paginate();
+    } else {
+      state = CursorPagination<T>(
+        meta: CursorPaginationMeta(
+          hasMore: true,
+          count: 0,
+        ),
+        data: [],
+      );
+    }
   }
 
   Future<void> paginate({
@@ -49,19 +57,25 @@ class PaginationProvider<T extends IModelPagination,
     // 강제로 다시 로딩하기
     // true - CursorPaginationLoading()
     bool forceRefetch = false,
+    int bounceMilSec = 3000,
   }) async {
-    paginationThrottle.setValue(_PaginationInfo(
-      fetchCount: fetchCount,
-      fetchMore: fetchMore,
-      forceRefetch: forceRefetch,
-    ));
+    EasyThrottle.throttle(
+      randomKey,
+      Duration(milliseconds: bounceMilSec),
+      () => _throttlePagination(
+        PaginationInfo(
+          fetchCount: fetchCount,
+          fetchMore: fetchMore,
+          forceRefetch: forceRefetch,
+        ),
+      ),
+    );
   }
 
-  _throttlePagination(_PaginationInfo info) async {
+  _throttlePagination(PaginationInfo info) async {
     final fetchCount = info.fetchCount;
     final fetchMore = info.fetchMore;
     final forceRefetch = info.forceRefetch;
-
     try {
       // 5가지 상태
       // 1. CursorPagination - 정상적인 데이터 존재 상태
@@ -168,7 +182,7 @@ class PaginationProvider<T extends IModelPagination,
         count: fetchCount,
       );
     }
-    final value = pState as IModelWithId;
+    final value = pState;
     return PaginationParams(
       after: fetchMore ? value.id : null,
       count: fetchCount,

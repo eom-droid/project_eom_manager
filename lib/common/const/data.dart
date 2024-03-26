@@ -83,6 +83,10 @@ enum RoleType {
   }
 }
 
+const kakao = 'kakao';
+const google = 'google';
+const apple = 'apple';
+
 const paginationDefaultFetcgCount = 10;
 
 const youtubeRatio = 0.56;

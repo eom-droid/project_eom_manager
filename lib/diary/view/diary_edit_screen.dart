@@ -165,20 +165,23 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
 
     return DefaultLayout(
       backgroundColor: BACKGROUND_BLACK,
-      title: widget.id == NEW_ID ? 'Diary Add' : 'Diary Edit',
-      isFullScreen: true,
-      appBarActions: [
-        IconButton(
-          onPressed: () async {
-            if (!isSaving) {
-              if (await onSavePressed()) {
-                context.pop<PopDataModel>(const PopDataModel(refetch: true));
+      appBar: AppBar(
+        backgroundColor: PRIMARY_COLOR,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              if (!isSaving) {
+                if (await onSavePressed()) {
+                  context.pop<PopDataModel>(const PopDataModel(refetch: true));
+                }
               }
-            }
-          },
-          icon: const Icon(Icons.save_as_outlined),
-        ),
-      ],
+            },
+            icon: const Icon(Icons.save_as_outlined),
+          ),
+        ],
+        title: Text(widget.id == NEW_ID ? 'Diary Add' : 'Diary Edit'),
+      ),
+      isFullScreen: true,
       child: SafeArea(
         top: false,
         child: CustomScrollView(
@@ -465,12 +468,13 @@ class _DiaryEditScreenState extends ConsumerState<DiaryEditScreen> {
         hashtags: hashtags,
         thumbnail: thumbnail,
         category: category,
-        isShown: true,
         txts: txts,
         imgs: imgs,
         vids: vids,
         contentOrder: contentOrder,
         createdAt: DateTime.now(),
+        likeCount: 0,
+        isLike: false,
       );
       try {
         if (widget.id == NEW_ID) {

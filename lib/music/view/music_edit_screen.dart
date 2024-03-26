@@ -53,24 +53,27 @@ class MusicEditScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     init(ref);
     return DefaultLayout(
-      title: id == NEW_ID ? '플리 추가' : '플리 수정',
-      appBarActions: [
-        IconButton(
-          onPressed: () async {
-            if (!isSaving) {
-              if (await onSavePressed(
-                context: context,
-                ref: ref,
-              )) {
-                context.pop<PopDataModel>(
-                  const PopDataModel(refetch: true),
-                );
+      appBar: AppBar(
+        backgroundColor: PRIMARY_COLOR,
+        title: Text(id == NEW_ID ? '플리 추가' : '플리 수정'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              if (!isSaving) {
+                if (await onSavePressed(
+                  context: context,
+                  ref: ref,
+                )) {
+                  context.pop<PopDataModel>(
+                    const PopDataModel(refetch: true),
+                  );
+                }
               }
-            }
-          },
-          icon: const Icon(Icons.save_as_outlined),
-        ),
-      ],
+            },
+            icon: const Icon(Icons.save_as_outlined),
+          ),
+        ],
+      ),
       child: SafeArea(
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

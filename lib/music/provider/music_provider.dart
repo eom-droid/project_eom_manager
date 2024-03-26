@@ -25,7 +25,7 @@ final musicProvider =
 });
 
 class MusicStateNotifier
-    extends PaginationProvider<MusicModel, MusicRepository> {
+    extends PaginationNotifier<MusicModel, MusicRepository> {
   MusicStateNotifier({
     required super.repository,
   });

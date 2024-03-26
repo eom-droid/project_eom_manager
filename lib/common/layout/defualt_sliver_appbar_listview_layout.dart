@@ -33,6 +33,7 @@ class DefaultSliverAppbarListviewLayout extends StatelessWidget {
             bottom: MediaQuery.of(context).padding.bottom,
             right: 20.0,
             child: FloatingActionButton(
+              backgroundColor: PRIMARY_COLOR,
               onPressed: onPressAdd,
               child: const Icon(Icons.add),
             ),

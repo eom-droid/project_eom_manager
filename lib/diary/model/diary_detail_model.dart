@@ -34,7 +34,8 @@ class DiaryDetailModel extends DiaryModel {
     required super.hashtags,
     required super.thumbnail,
     required super.category,
-    required super.isShown,
+    required super.likeCount,
+    required super.isLike,
     required this.txts,
     required this.imgs,
     required this.vids,
@@ -50,14 +51,16 @@ class DiaryDetailModel extends DiaryModel {
         hashtags: [],
         thumbnail: '',
         category: DiaryCategory.daily,
-        isShown: true,
         txts: [],
         imgs: [],
         vids: [],
         contentOrder: [],
         createdAt: DateTime.now(),
+        likeCount: 0,
+        isLike: false,
       );
 
+  @override
   DiaryDetailModel copyWith({
     String? id,
     String? title,
@@ -66,12 +69,13 @@ class DiaryDetailModel extends DiaryModel {
     List<String>? hashtags,
     String? thumbnail,
     DiaryCategory? category,
-    bool? isShown,
     DateTime? createdAt,
     List<String>? txts,
     List<String>? imgs,
     List<String>? vids,
     List<DiaryContentType>? contentOrder,
+    int? likeCount,
+    bool? isLike,
   }) {
     return DiaryDetailModel(
       id: id ?? this.id,
@@ -81,12 +85,13 @@ class DiaryDetailModel extends DiaryModel {
       hashtags: hashtags ?? this.hashtags,
       thumbnail: thumbnail ?? this.thumbnail,
       category: category ?? this.category,
-      isShown: isShown ?? this.isShown,
       txts: txts ?? this.txts,
       imgs: imgs ?? this.imgs,
       vids: vids ?? this.vids,
       contentOrder: contentOrder ?? this.contentOrder,
       createdAt: createdAt ?? this.createdAt,
+      likeCount: likeCount ?? this.likeCount,
+      isLike: isLike ?? this.isLike,
     );
   }
 

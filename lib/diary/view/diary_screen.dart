@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/components/custom_sliver_app_bar.dart';
-import 'package:manager/common/components/pagination_list_view.dart';
+import 'package:manager/common/const/colors.dart';
+
 import 'package:manager/common/const/data.dart';
-import 'package:manager/common/layout/defualt_sliver_appbar_listview_layout.dart';
+import 'package:manager/common/layout/default_scroll_base_pagination_layout.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/utils/data_utils.dart';
@@ -24,30 +25,57 @@ class DiaryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultSliverAppbarListviewLayout(
+    // return DefaultSliverAppbarListviewLayout(
+    //   sliverAppBar: _renderAppBar(context),
+    //   onRefresh: () async {
+    //     await ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
+    //   },
+    //   onPressAdd: () {
+    //     context.pushNamed(
+    //       DiaryEditScreen.routeName,
+    //       pathParameters: {'rid': NEW_ID},
+    //     );
+    //   },
+    //   listview: PaginationListView(
+    //     provider: diaryProvider,
+    //     itemBuilder: <DiaryModel>(_, int index, model) {
+    //       return Container();
+    //     },
+    //     customList: (CursorPagination cp) {
+    //       return _renderDiaryList(
+    //         cp: cp,
+    //         ref: ref,
+    //         context: context,
+    //       );
+    //     },
+    //   ),
+    // );
+    return DefaultScrollBasePaginationLayout(
+      provider: diaryProvider,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.pushNamed(
+            DiaryEditScreen.routeName,
+            pathParameters: {'rid': NEW_ID},
+          );
+        },
+        backgroundColor: PRIMARY_COLOR,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
+      body: (CursorPagination cp, ScrollController controller) {
+        return _renderDiaryList(
+          cp: cp,
+          ref: ref,
+          context: context,
+        );
+      },
       sliverAppBar: _renderAppBar(context),
       onRefresh: () async {
         await ref.read(diaryProvider.notifier).paginate(forceRefetch: true);
       },
-      onPressAdd: () {
-        context.pushNamed(
-          DiaryEditScreen.routeName,
-          pathParameters: {'rid': NEW_ID},
-        );
-      },
-      listview: PaginationListView(
-        provider: diaryProvider,
-        itemBuilder: <DiaryModel>(_, int index, model) {
-          return Container();
-        },
-        customList: (CursorPagination cp) {
-          return _renderDiaryList(
-            cp: cp,
-            ref: ref,
-            context: context,
-          );
-        },
-      ),
     );
   }
 
@@ -98,11 +126,17 @@ class DiaryScreen extends ConsumerWidget {
       }
     }
 
+    // 상단에 공간을 제거하기 위해서 MediaQuery.removePadding 사용
+    final ScrollController scrollController = ScrollController();
     return MediaQuery.removePadding(
       removeTop: true,
       context: context,
       child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
+        // shrinkWrap 추가
+        controller: scrollController,
+        // primary: true,
+        shrinkWrap: true,
+        // physics: const NeverScrollableScrollPhysics(),
         itemCount: cp.data.length + 1,
         separatorBuilder: (context, index) => const Padding(
           padding: EdgeInsets.only(top: 32.0, left: 16.0, right: 16.0),
@@ -110,7 +144,7 @@ class DiaryScreen extends ConsumerWidget {
             color: Colors.grey,
           ),
         ),
-        itemBuilder: (_, index) {
+        itemBuilder: (context, index) {
           if (index == cp.data.length) {
             return Padding(
               padding: const EdgeInsets.symmetric(
@@ -154,6 +188,13 @@ class DiaryScreen extends ConsumerWidget {
                 },
                 child: DiaryCard.fromModel(
                   model: diaryList[index],
+                  onTapLike: () {
+                    // NOTE : 추후 변경 필요
+                    // 좋아요 상태가 원래 상태와 같은지를 구분하여 backend에 요청을 보내지 않는 로직이 필요함
+                    ref.read(diaryProvider.notifier).toggleLike(
+                          diaryId: diaryList[index].id,
+                        );
+                  },
                   onThreeDotSelected: (int? value) {
                     threeDotSelected(
                       context: context,

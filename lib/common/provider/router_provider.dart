@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/auth/view/login_screen.dart';
+import 'package:manager/chat/view/chat_detail_screen.dart';
+import 'package:manager/chat/view/chat_screen.dart';
 import 'package:manager/common/view/root_tab.dart';
 import 'package:manager/common/view/splash_screen.dart';
 import 'package:manager/diary/view/diary_detail_screen.dart';
@@ -9,7 +11,10 @@ import 'package:manager/diary/view/diary_edit_screen.dart';
 import 'package:manager/diary/view/diary_screen.dart';
 import 'package:manager/music/view/music_edit_screen.dart';
 import 'package:manager/music/view/music_screen.dart';
-import 'package:manager/user/model/user_with_token_model.dart';
+import 'package:manager/settings/view/profile_modify_screen.dart';
+import 'package:manager/settings/view/settings_screen.dart';
+import 'package:manager/user/model/user_model.dart';
+
 import 'package:manager/user/provider/user_provider.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -33,7 +38,7 @@ class RouterProvider extends ChangeNotifier {
   final Ref ref;
 
   RouterProvider({required this.ref}) {
-    ref.listen<UserWithTokenModelBase?>(userProvider, (previous, next) {
+    ref.listen<UserModelBase?>(userProvider, (previous, next) {
       if (previous != next) {
         notifyListeners();
       }
@@ -78,9 +83,33 @@ class RouterProvider extends ChangeNotifier {
               ),
             ),
             GoRoute(
+              path: 'chat',
+              name: ChatScreen.routeName,
+              builder: (_, __) => const ChatScreen(),
+            ),
+            GoRoute(
+              path: 'chat/:rid',
+              name: ChatDetailScreen.routeName,
+              builder: (_, state) => ChatDetailScreen(
+                id: state.pathParameters['rid']!,
+              ),
+            ),
+            GoRoute(
                 path: 'login',
                 name: LoginScreen.routerName,
                 builder: (_, state) => const LoginScreen()),
+            GoRoute(
+              path: "settings",
+              name: SettingsScreen.routeName,
+              builder: (_, __) => const SettingsScreen(),
+              routes: [
+                GoRoute(
+                  path: "profileModify",
+                  name: ProfileModify.routeName,
+                  builder: (_, __) => ProfileModify(),
+                ),
+              ],
+            ),
           ],
         ),
         GoRoute(
@@ -97,7 +126,7 @@ class RouterProvider extends ChangeNotifier {
   // 홈 스크린으로 보내줄지 확인하는 과정이 필요하다.
 
   String? redirectLogic(BuildContext _, GoRouterState state) {
-    final UserWithTokenModelBase? user = ref.read(userProvider);
+    final UserModelBase? user = ref.read(userProvider);
 
     final loginRoute = state.location == '/login';
     final splashRoute = state.location == '/splash';
@@ -108,7 +137,7 @@ class RouterProvider extends ChangeNotifier {
 
     // UserModelError
     // 무조건 login페이지로 이동
-    if (user == null || user is UserWithTokenModelError) {
+    if (user == null || user is UserModelError) {
       return loginRoute ? null : '/login';
     }
 
@@ -118,7 +147,7 @@ class RouterProvider extends ChangeNotifier {
     // 사용자 정보가 있는 상태면
     // 로그인 중이거나 현재 위치가 SplashScreen이면
     // 홈으로 이동
-    if (user is UserWithTokenModel) {
+    if (user is UserModel) {
       return loginRoute || splashRoute ? '/' : null;
     }
 

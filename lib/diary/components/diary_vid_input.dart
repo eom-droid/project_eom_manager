@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:manager/common/components/custom_video_player.dart';
 import 'package:manager/common/components/full_loading_screen.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:manager/common/style/button/custom_outlined_button_style.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'package:video_player/video_player.dart';
 
 class DiaryVidInput extends StatefulWidget {
@@ -83,6 +86,7 @@ class _DiaryVidInputState extends State<DiaryVidInput> {
   // 비동기 처리를 통해 갤러리에서 이미지의 경로를 가져온다.
   getVideoPath(ImageSource videoSource) async {
     FullLoadingScreen(context).startLoading();
+
     try {
       final videoXFile = await picker.pickVideo(
         source: videoSource,
@@ -101,6 +105,31 @@ class _DiaryVidInputState extends State<DiaryVidInput> {
       }
       FullLoadingScreen(context).stopLoading();
     } catch (e) {
+      if (e is PlatformException && e.code == 'photo_access_denied') {
+        // 기본 toast 보여주기
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('갤러리 접근 권한을 허용해주세요.'),
+                TextButton(
+                  onPressed: () async {
+                    var status = await Permission.photos.status;
+                    if (status.isDenied) {
+                      openAppSettings();
+                    }
+                  },
+                  child: const Text(
+                    '권한 설정',
+                    style: TextStyle(color: PRIMARY_COLOR),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
       FullLoadingScreen(context).stopLoading();
 
       // 1. not supported video file

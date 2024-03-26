@@ -31,8 +31,7 @@ class DiaryModel implements IModelWithId {
   )
   // category : 카테고리 -> 카테고리를 통해서 다이어리 리스트 페이지에서 필터링을 진행할 예정
   final DiaryCategory category;
-  // isShown : 표출 여부
-  final bool isShown;
+
   // createdAt : 생성 일자
   // read 해오는 경우 서버에서 UTC로 보내주기 때문에 local time zone으로 변경
   // write 경우는 따로 파싱을 하지 않음 -> 서버에서 저장 시 MongoDB가 자체적으로 UTC로 변경하여 저장
@@ -42,6 +41,11 @@ class DiaryModel implements IModelWithId {
   )
   final DateTime createdAt;
 
+  // likeCount : 좋아요 개수
+  final int likeCount;
+  // isLike : 좋아요 여부
+  final bool isLike;
+
   DiaryModel({
     required this.id,
     required this.title,
@@ -50,21 +54,36 @@ class DiaryModel implements IModelWithId {
     required this.hashtags,
     required this.thumbnail,
     required this.category,
-    required this.isShown,
     required this.createdAt,
+    required this.likeCount,
+    required this.isLike,
   });
 
-  factory DiaryModel.empty() => DiaryModel(
-        id: '',
-        title: '',
-        writer: '',
-        weather: '',
-        hashtags: [],
-        thumbnail: '',
-        category: DiaryCategory.daily,
-        isShown: true,
-        createdAt: DateTime.now(),
-      );
+  copyWith({
+    String? id,
+    String? title,
+    String? writer,
+    String? weather,
+    List<String>? hashtags,
+    String? thumbnail,
+    DiaryCategory? category,
+    DateTime? createdAt,
+    int? likeCount,
+    bool? isLike,
+  }) {
+    return DiaryModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      writer: writer ?? this.writer,
+      weather: weather ?? this.weather,
+      hashtags: hashtags ?? this.hashtags,
+      thumbnail: thumbnail ?? this.thumbnail,
+      category: category ?? this.category,
+      createdAt: createdAt ?? this.createdAt,
+      likeCount: likeCount ?? this.likeCount,
+      isLike: isLike ?? this.isLike,
+    );
+  }
 
   factory DiaryModel.fromJson(Map<String, dynamic> json) =>
       _$DiaryModelFromJson(json);

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manager/common/components/custom_sliver_app_bar.dart';
-import 'package:manager/common/components/pagination_list_view.dart';
+import 'package:manager/common/const/colors.dart';
+
 import 'package:manager/common/const/data.dart';
-import 'package:manager/common/layout/defualt_sliver_appbar_listview_layout.dart';
+import 'package:manager/common/layout/default_scroll_base_pagination_layout.dart';
 import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/common/model/pop_data_model.dart';
 import 'package:manager/common/utils/ui_utils.dart';
@@ -73,6 +74,7 @@ class MusicScreen extends ConsumerWidget {
       context: context,
       removeTop: true,
       child: ListView.builder(
+        shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           if (index == cp.data.length) {
@@ -133,32 +135,56 @@ class MusicScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultSliverAppbarListviewLayout(
+    return DefaultScrollBasePaginationLayout(
+      provider: musicProvider,
+      body: (CursorPagination cp, ScrollController controller) {
+        return _renderMusicList(
+          cp: cp,
+          ref: ref,
+          context: context,
+        );
+      },
       sliverAppBar: _renderAppBar(context),
       onRefresh: () async {
         await ref.read(musicProvider.notifier).paginate(forceRefetch: true);
       },
-      onPressAdd: () {
-        context.pushNamed(
-          MusicEditScreen.routeName,
-          pathParameters: {'rid': NEW_ID},
-        );
-      },
-      listview: PaginationListView(
-        provider: musicProvider,
-        itemBuilder: <MusicModel>(_, int index, model) {
-          return Container();
-        },
-        customList: (CursorPagination cp) {
-          return _renderMusicList(
-            context: context,
-            cp: cp,
-            ref: ref,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.pushNamed(
+            MusicEditScreen.routeName,
+            pathParameters: {'rid': NEW_ID},
           );
         },
+        backgroundColor: PRIMARY_COLOR,
+        child: const Icon(Icons.add),
       ),
     );
   }
+  // return DefaultSliverAppbarListviewLayout(
+  //   sliverAppBar: _renderAppBar(context),
+  //   onRefresh: () async {
+  //     await ref.read(musicProvider.notifier).paginate(forceRefetch: true);
+  //   },
+  //   onPressAdd: () {
+  //     context.pushNamed(
+  //       MusicEditScreen.routeName,
+  //       pathParameters: {'rid': NEW_ID},
+  //     );
+  //   },
+  //   listview: PaginationListView(
+  //     provider: musicProvider,
+  //     itemBuilder: <MusicModel>(_, int index, model) {
+  //       return Container();
+  //     },
+  //     customList: (CursorPagination cp) {
+  //       return _renderMusicList(
+  //         context: context,
+  //         cp: cp,
+  //         ref: ref,
+  //       );
+  //     },
+  //   ),
+  // );
 
   threeDotSelected({
     required int? value,

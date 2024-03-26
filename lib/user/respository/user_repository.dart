@@ -6,6 +6,7 @@ import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit/retrofit.dart';
+import 'dart:convert';
 
 part 'user_repository.g.dart';
 
@@ -24,6 +25,17 @@ abstract class UserRepository {
   @GET('/me')
   Future<UserModel?> getMe({
     @Header('authorization') required String accessTokenWithBearer,
+  });
+
+  @PATCH("/me/profile")
+  @Headers({
+    'accessToken': 'true',
+  })
+  @MultiPart()
+  Future<UserModel> updateProfile({
+    // @Body() required Map<String, dynamic> profile,
+    @Part(name: "profile") required Map<String, dynamic> profile,
+    @Part(name: "file") required List<MultipartFile> file,
   });
 }
 
