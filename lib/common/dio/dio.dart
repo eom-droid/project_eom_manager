@@ -20,7 +20,7 @@ final dioProvider = Provider<Dio>((ref) {
 class CustomInterceptor extends Interceptor {
   final FlutterSecureStorage storage;
   final Ref ref;
-  final String ip = dotenv.env['IP']!;
+  final String ip = dotenv.env['REST_API_BASE_URL']!;
 
   CustomInterceptor({
     required this.ref,

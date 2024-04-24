@@ -14,10 +14,11 @@ final authRepositoryProvider = Provider((ref) {
 
   final storage = ref.watch(secureStorageProvider);
 
-  String ip = dotenv.env['IP']!;
+  final String baseUrl = dotenv.env['REST_API_BASE_URL']!;
+
   return AuthRepository(
     dio: dio,
-    baseUrl: 'http://$ip/api/v1/auth',
+    baseUrl: '$baseUrl/api/v1/auth',
     storage: storage,
   );
 });

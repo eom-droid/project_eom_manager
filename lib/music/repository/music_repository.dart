@@ -16,9 +16,9 @@ part 'music_repository.g.dart';
 
 final musicRepositoryProvider = Provider<MusicRepository>((ref) {
   final dio = ref.read(dioProvider);
-  String ip = dotenv.env['IP']!;
+  String ip = dotenv.env['REST_API_BASE_URL']!;
 
-  return MusicRepository(dio, baseUrl: 'http://$ip/api/v1/musics');
+  return MusicRepository(dio, baseUrl: '$ip/api/v1/musics');
 });
 
 @RestApi()

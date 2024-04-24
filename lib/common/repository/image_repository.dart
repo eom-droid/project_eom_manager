@@ -8,9 +8,9 @@ part 'image_repository.g.dart';
 
 final uploadRepositoryProvider = Provider<UploadRepository>((ref) {
   final dio = ref.read(dioProvider);
-  String ip = dotenv.env['IP']!;
+  String ip = dotenv.env['REST_API_BASE_URL']!;
 
-  return UploadRepository(dio, baseUrl: 'http://$ip/upload/diary/images');
+  return UploadRepository(dio, baseUrl: '$ip/upload/diary/images');
 });
 
 @RestApi()

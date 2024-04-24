@@ -8,13 +8,13 @@ import 'package:manager/common/const/setting.dart';
 class DataUtils {
   static String pathToUrl(String value) {
     String defaultAWSS3Url = dotenv.env['DefaultAWSS3Url']!;
-    return defaultAWSS3Url + value;
+    return "$defaultAWSS3Url/$value";
   }
 
   static String? pathToUrlNullable(String? value) {
     if (value != null) {
       String defaultAWSS3Url = dotenv.env['DefaultAWSS3Url']!;
-      return defaultAWSS3Url + value;
+      return "$defaultAWSS3Url/$value";
     } else {
       return null;
     }

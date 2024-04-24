@@ -1,19 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:manager/chat/model/chat_message_model.dart';
 import 'package:manager/chat/model/chat_model.dart';
-import 'package:manager/chat/model/chat_room_model.dart';
 import 'package:manager/chat/provider/chat_provider.dart';
-import 'package:manager/chat/provider/chat_room_provider.dart';
-import 'package:manager/common/components/cursor_pagination_error_comp.dart';
-import 'package:manager/common/components/cursor_pagination_loading_comp.dart';
+
 import 'package:manager/common/components/custom_circle_avatar.dart';
 import 'package:manager/common/const/colors.dart';
 import 'package:manager/common/const/setting.dart';
 import 'package:manager/common/layout/default_layout.dart';
-import 'package:manager/common/model/cursor_pagination_model.dart';
 import 'package:manager/common/utils/data_utils.dart';
 import 'package:manager/user/model/user_model.dart';
 import 'package:manager/user/provider/user_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   static const routeName = 'chatDetail';
@@ -41,6 +38,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
     controller.addListener(listener);
     // 앱 상태 변경 시 트리거
     WidgetsBinding.instance.addObserver(this);
+    ref.read(chatProvider.notifier).enterRoom(widget.id);
   }
 
   void listener() {
@@ -48,17 +46,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
         controller.position.maxScrollExtent <= GAP_WHEN_PAGINATE) return;
     if (controller.offset >
         controller.position.maxScrollExtent - GAP_WHEN_PAGINATE) {
-      ref.read(chatProvider(widget.id).notifier).paginate(
-            fetchMore: true,
+      ref.read(chatProvider.notifier).paginateMessage(
+            roomId: widget.id,
           );
     }
   }
 
   @override
   void deactivate() {
-    print("deactivate");
     // deactivate 이후에는 ref를 read해올수 없음
-    ref.read(chatProvider(widget.id).notifier).leaveRoom();
+    ref.read(chatProvider.notifier).leaveRoom(widget.id);
     // TODO: implement deactivate
     super.deactivate();
   }
@@ -73,59 +70,19 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('state : $state');
     if (state == AppLifecycleState.resumed) {
-      ref.read(chatProvider(widget.id).notifier).reJoinRoom();
+      ref.read(chatProvider.notifier).reJoinRoom(
+            roomId: widget.id,
+            route: ChatDetailScreen.routeName,
+          );
     } else if (state == AppLifecycleState.paused) {
-      ref.read(chatProvider(widget.id).notifier).leaveRoom();
+      ref.read(chatProvider.notifier).leaveRoom(widget.id);
     }
-  }
-
-  Widget loadBody({
-    required ChatPagination state,
-    required ChatRoomModel? room,
-    required UserModel me,
-  }) {
-    final chatState = state.currentState;
-    // 에러 발생 시
-    if (chatState is CursorPaginationError) {
-      return CursorPaginationErrorComp(
-        state: chatState,
-        onRetry: () {
-          ref.read(chatProvider(widget.id).notifier).paginate(
-                forceRefetch: true,
-              );
-        },
-      );
-    }
-
-    if (room == null) {
-      return const Center(
-        child: Text('채팅방이 존재하지 않습니다.'),
-      );
-    }
-
-    // CursorPagination
-    // CursorPaginationFetchMore
-    // CursorPaginationRefetching
-
-    // 초기 로딩
-    if (chatState is CursorPaginationLoading ||
-        chatState is! CursorPagination<ChatModel>) {
-      return const CursorPaginationLoadingComp();
-    }
-
-    return _body(
-      chatState: state,
-      room: room,
-      me: me,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final chatState = ref.watch(chatProvider(widget.id));
-    final room = ref.read(chatRoomProvider.notifier).getChatRoomInfo(widget.id);
+    final chatState = ref.watch(chatDetailProvider(widget.id));
     final me = ref.read(userProvider) as UserModel;
     return DefaultLayout(
       isFullScreen: true,
@@ -135,28 +92,31 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
         // leadingWidth: 40,
         titleSpacing: 0,
         centerTitle: false,
-        title: Text(
-          room == null ? '채팅방 미존재' : room.title,
-          style: const TextStyle(
+        title: const Text(
+          "주인장",
+          style: TextStyle(
             fontWeight: FontWeight.bold,
+            fontSize: 20.0,
           ),
         ),
       ),
-      child: loadBody(
-        room: room,
-        me: me,
-        state: chatState,
-      ),
+      child: chatState == null
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: PRIMARY_COLOR,
+              ),
+            )
+          : _body(
+              chat: chatState,
+              me: me,
+            ),
     );
   }
 
   Widget _body({
-    required ChatPagination chatState,
-    required ChatRoomModel room,
+    required ChatDetailModel chat,
     required UserModel me,
   }) {
-    final cp = chatState.currentState as CursorPagination<ChatModel>;
-    // final members = room.members;
     return SafeArea(
       bottom: true,
       child: Stack(
@@ -171,57 +131,70 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                 vertical: 8.0,
               ),
               child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 reverse: true,
                 controller: controller,
-                itemCount: cp.data.length,
+                itemCount: chat.messages.length,
                 itemBuilder: (context, index) {
-                  final userId = cp.data[index].userId;
-                  final nextUserId = index + 1 < cp.data.length
-                      ? cp.data[index + 1].userId
+                  final userId = chat.messages[index].userId;
+                  final nextUserId = index + 1 < chat.messages.length
+                      ? chat.messages[index + 1].userId
                       : null;
                   final previousUserId =
-                      index - 1 > -1 ? cp.data[index - 1].userId : null;
-                  final afterCreatedAt = index + 1 < cp.data.length
-                      ? cp.data[index + 1].createdAt
+                      index - 1 > -1 ? chat.messages[index - 1].userId : null;
+                  final afterCreatedAt = index + 1 < chat.messages.length
+                      ? chat.messages[index + 1].createdAt
                       : null;
                   final isMe = userId == me.id;
-                  final user = room.members.firstWhere(
+                  final user = chat.members.firstWhere(
                     (element) => element.id == userId,
                   );
 
-                  final previousCreatedAt =
-                      index - 1 > -1 ? cp.data[index - 1].createdAt : null;
+                  final previousCreatedAt = index - 1 > -1
+                      ? chat.messages[index - 1].createdAt
+                      : null;
 
-                  final chat = cp.data[index];
+                  final chatMessage = chat.messages[index];
 
                   bool showChatTime = previousCreatedAt == null
                       ? previousUserId != userId
                       : previousUserId != userId ||
-                          previousCreatedAt.day != chat.createdAt.day ||
-                          previousCreatedAt.month != chat.createdAt.month ||
-                          previousCreatedAt.year != chat.createdAt.year ||
-                          previousCreatedAt.hour != chat.createdAt.hour ||
-                          previousCreatedAt.minute != chat.createdAt.minute;
+                          previousCreatedAt.day != chatMessage.createdAt.day ||
+                          previousCreatedAt.month !=
+                              chatMessage.createdAt.month ||
+                          previousCreatedAt.year !=
+                              chatMessage.createdAt.year ||
+                          previousCreatedAt.hour !=
+                              chatMessage.createdAt.hour ||
+                          previousCreatedAt.minute !=
+                              chatMessage.createdAt.minute;
 
                   bool showAvatar = afterCreatedAt == null
                       ? !isMe
                       : !isMe &&
                           (nextUserId != userId ||
-                              afterCreatedAt.day != chat.createdAt.day ||
-                              afterCreatedAt.month != chat.createdAt.month ||
-                              afterCreatedAt.year != chat.createdAt.year ||
-                              afterCreatedAt.hour != chat.createdAt.hour ||
-                              afterCreatedAt.minute != chat.createdAt.minute);
-                  int readUserCount = chatState.memberLastReadChatMap.length;
-                  chatState.memberLastReadChatMap.forEach((key, value) {
-                    if (value != null) {
-                      if (value.compareTo(chat.id) >= 0) {
+                              afterCreatedAt.day != chatMessage.createdAt.day ||
+                              afterCreatedAt.month !=
+                                  chatMessage.createdAt.month ||
+                              afterCreatedAt.year !=
+                                  chatMessage.createdAt.year ||
+                              afterCreatedAt.hour !=
+                                  chatMessage.createdAt.hour ||
+                              afterCreatedAt.minute !=
+                                  chatMessage.createdAt.minute);
+                  int readUserCount = chat.members.length;
+
+                  for (var member in chat.members) {
+                    if (member.lastReadChatId != null) {
+                      if (member.lastReadChatId!.compareTo(chatMessage.id) >=
+                          0) {
                         readUserCount--;
                       }
                     }
-                  });
+                  }
 
-                  // print(cp.data[index].id.compareTo(myLastReadChat));
                   return Column(
                     children: [
                       const SizedBox(
@@ -231,7 +204,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                         height: showAvatar ? 5 : 0,
                       ),
                       _chatDate(
-                        createdAt: chat.createdAt,
+                        createdAt: chatMessage.createdAt,
                         nextCreatedAt: afterCreatedAt,
                       ),
                       if (isMe)
@@ -244,7 +217,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                             ),
                             Row(
                               children: [
-                                if (chat is ChatTempModel)
+                                if (chatMessage is ChatMessageTempModel)
                                   Transform.flip(
                                     flipX: true,
                                     child: const Icon(
@@ -253,7 +226,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                       size: 12.0,
                                     ),
                                   ),
-                                if (chat is ChatFailedModel)
+                                if (chatMessage is ChatMessageFailedModel)
                                   GestureDetector(
                                     onTap: () {
                                       showDialog(
@@ -274,14 +247,14 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                               actions: [
                                                 TextButton(
                                                   onPressed: () {
-                                                    ref
-                                                        .read(chatProvider(
-                                                                widget.id)
-                                                            .notifier)
-                                                        .deleteFailedMessage(
-                                                          tempMessageId: chat
-                                                              .tempMessageId,
-                                                        );
+                                                    // ref
+                                                    //     .read(chatProvider(
+                                                    //             widget.id)
+                                                    //         .notifier)
+                                                    //     .deleteFailedMessage(
+                                                    //       tempMessageId: chat
+                                                    //           .tempMessageId,
+                                                    //     );
                                                     Navigator.pop(context);
                                                   },
                                                   child: const Text(
@@ -294,14 +267,14 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                                 ),
                                                 TextButton(
                                                   onPressed: () {
-                                                    ref
-                                                        .read(chatProvider(
-                                                                widget.id)
-                                                            .notifier)
-                                                        .resendMessage(
-                                                          tempMessageId: chat
-                                                              .tempMessageId,
-                                                        );
+                                                    // ref
+                                                    //     .read(chatProvider(
+                                                    //             widget.id)
+                                                    //         .notifier)
+                                                    //     .resendMessage(
+                                                    //       tempMessageId: chat
+                                                    //           .tempMessageId,
+                                                    //     );
 
                                                     Navigator.pop(context);
                                                   },
@@ -360,7 +333,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                       ),
                                     ),
                                   ),
-                                if (chat is! ChatFailedModel)
+                                if (chat is! ChatMessageFailedModel)
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
@@ -369,12 +342,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                           readUserCount.toString(),
                                           style: const TextStyle(
                                             color: PRIMARY_COLOR,
-                                            fontSize: 12.0,
+                                            fontSize: 11.0,
                                           ),
                                         ),
                                       showChatTime
                                           ? _chatTime(
-                                              chat.createdAt,
+                                              chatMessage.createdAt,
                                             )
                                           : const SizedBox(
                                               width: 0,
@@ -397,10 +370,10 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: Text(
-                                  chat.content,
+                                  chatMessage.content,
                                   style: const TextStyle(
                                     color: Colors.black,
-                                    fontSize: 15.0,
+                                    fontSize: 14.0,
                                     height: 1.2,
                                   ),
                                 ),
@@ -433,7 +406,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                       user.nickname,
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 14.0,
+                                        fontSize: 13.0,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -456,10 +429,10 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                                 BorderRadius.circular(12.0),
                                           ),
                                           child: Text(
-                                            chat.content,
+                                            chatMessage.content,
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 15.0,
+                                              fontSize: 14.0,
                                               height: 1.2,
                                             ),
                                           ),
@@ -477,12 +450,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
                                               readUserCount.toString(),
                                               style: const TextStyle(
                                                 color: PRIMARY_COLOR,
-                                                fontSize: 12.0,
+                                                fontSize: 11.0,
                                               ),
                                             ),
                                           showChatTime
                                               ? _chatTime(
-                                                  chat.createdAt,
+                                                  chatMessage.createdAt,
                                                 )
                                               : const SizedBox(
                                                   width: 0,
@@ -520,7 +493,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
       ),
       style: const TextStyle(
         color: Colors.white,
-        fontSize: 12.0,
+        fontSize: 11.0,
       ),
     );
   }
@@ -551,7 +524,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
             '${createdAt.year}년 ${createdAt.month}월 ${createdAt.day}일',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13.0,
+              fontSize: 12.0,
             ),
           ),
         ),
@@ -562,9 +535,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
   }
 
   onSendMessage(String content) {
-    ref.read(chatProvider(widget.id).notifier).sendMessage(
-          content: content,
-        );
+    ref
+        .read(chatProvider.notifier)
+        .postMessage(content: content, roomId: widget.id);
   }
 }
 
@@ -615,12 +588,12 @@ class _BottomInputState extends State<BottomInput> {
                   },
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15.0,
+                    fontSize: 14.0,
                     fontWeight: FontWeight.w400,
                     height: 1.4,
                   ),
                   cursorColor: Colors.white,
-                  cursorHeight: 16.0,
+                  // cursorHeight: 20.0,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   decoration: const InputDecoration(
